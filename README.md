@@ -1,3 +1,5 @@
+![Wallpaper Collection Banner](https://github.com/user-attachments/assets/d04733a1-b5f9-44a1-96b1-03be4595ab03)
+
 # Wallpaper Collection
 
 1. Wallpapers are updated whenever I remember.
