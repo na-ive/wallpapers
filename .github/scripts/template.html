@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wallpaper Gallery</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        [x-cloak] { display: none !important; }
+        .masonry-item { break-inside: avoid; margin-bottom: 1rem; }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-100 font-sans" x-data="galleryApp()">
+
+    <!-- Header -->
+    <header class="sticky top-0 z-40 bg-gray-900/80 backdrop-blur-md border-b border-gray-800 py-4">
+        <div class="container mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4">
+            <h1 class="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
+                My Wallpapers
+            </h1>
+            
+            <div class="flex items-center gap-4 w-full md:w-auto">
+                <!-- Search -->
+                <div class="relative flex-grow md:w-64">
+                    <input type="text" x-model="search" placeholder="Search wallpapers..." 
+                        class="w-full bg-gray-800 border border-gray-700 rounded-lg py-2 px-10 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <i class="fa fa-search absolute left-3 top-3 text-gray-500"></i>
+                </div>
+
+                <!-- Sort -->
+                <select x-model="sortOrder" class="bg-gray-800 border border-gray-700 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="newest">Newest</option>
+                    <option value="oldest">Oldest</option>
+                    <option value="az">A-Z</option>
+                    <option value="za">Z-A</option>
+                </select>
+            </div>
+        </div>
+    </header>
+
+    <!-- Gallery Grid -->
+    <main class="container mx-auto px-4 py-8">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <template x-for="wp in filteredWallpapers()" :key="wp.filename">
+                <div class="group relative bg-gray-800 rounded-xl overflow-hidden shadow-lg transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl">
+                    <!-- Image -->
+                    <div class="aspect-video w-full overflow-hidden bg-gray-700">
+                        <img :src="wp.filename" :alt="wp.filename" loading="lazy" 
+                            class="w-full h-full object-cover cursor-pointer"
+                            @click="openLightbox(wp)">
+                    </div>
+
+                    <!-- Overlay Info -->
+                    <div class="p-4">
+                        <div class="flex items-center justify-between gap-2">
+                            <span class="text-xs text-gray-400 truncate flex-grow" x-text="cleanName(wp.filename)"></span>
+                            <div class="flex gap-2">
+                                <!-- Wallhaven Link -->
+                                <template x-if="wp.wallhaven_id">
+                                    <a :href="'https://wallhaven.cc/w/' + wp.wallhaven_id" target="_blank" 
+                                        class="text-gray-400 hover:text-blue-400 transition-colors" title="View on Wallhaven">
+                                        <i class="fa-solid fa-link"></i>
+                                    </a>
+                                </template>
+                                <!-- Download -->
+                                <a :href="wp.filename" download class="text-gray-400 hover:text-green-400 transition-colors" title="Download">
+                                    <i class="fa fa-download"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </div>
+
+        <!-- Empty State -->
+        <div x-show="filteredWallpapers().length === 0" class="text-center py-20" x-cloak>
+            <i class="fa-solid fa-image-slash text-6xl text-gray-700 mb-4"></i>
+            <p class="text-gray-500 text-xl">No wallpapers found matches your search.</p>
+        </div>
+    </main>
+
+    <!-- Lightbox -->
+    <div x-show="lightboxOpen" 
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black/95 p-4"
+        x-transition:enter="transition ease-out duration-300"
+        x-transition:enter-start="opacity-0"
+        x-transition:enter-end="opacity-100"
+        x-transition:leave="transition ease-in duration-200"
+        x-transition:leave-start="opacity-100"
+        x-transition:leave-end="opacity-0"
+        @keydown.escape.window="closeLightbox()"
+        x-cloak>
+        
+        <button @click="closeLightbox()" class="absolute top-6 right-6 text-white text-3xl hover:text-gray-400 z-50">
+            <i class="fa fa-times"></i>
+        </button>
+
+        <img :src="currentWp?.filename" class="max-w-full max-h-full object-contain shadow-2xl">
+        
+        <div class="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-4 bg-gray-900/50 backdrop-blur px-6 py-3 rounded-full border border-gray-700">
+             <span class="text-sm font-medium" x-text="currentWp?.filename"></span>
+             <a :href="currentWp?.filename" download class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1 rounded-lg text-sm transition-colors">
+                Download
+             </a>
+             <template x-if="currentWp?.wallhaven_id">
+                <a :href="'https://wallhaven.cc/w/' + currentWp?.wallhaven_id" target="_blank" class="bg-gray-700 hover:bg-gray-600 text-white px-4 py-1 rounded-lg text-sm transition-colors">
+                    Wallhaven
+                </a>
+             </template>
+        </div>
+    </div>
+
+    <script>
+        function galleryApp() {
+            return {
+                wallpapers: [],
+                search: '',
+                sortOrder: 'newest',
+                lightboxOpen: false,
+                currentWp: null,
+
+                init() {
+                    fetch('wallpapers.json')
+                        .then(res => res.json())
+                        .then(data => {
+                            this.wallpapers = data;
+                        });
+                },
+
+                filteredWallpapers() {
+                    let result = this.wallpapers.filter(wp => 
+                        wp.filename.toLowerCase().includes(this.search.toLowerCase())
+                    );
+
+                    if (this.sortOrder === 'newest') {
+                        result.sort((a, b) => new Date(b.mtime) - new Date(a.mtime));
+                    } else if (this.sortOrder === 'oldest') {
+                        result.sort((a, b) => new Date(a.mtime) - new Date(b.mtime));
+                    } else if (this.sortOrder === 'az') {
+                        result.sort((a, b) => a.filename.localeCompare(b.filename));
+                    } else if (this.sortOrder === 'za') {
+                        result.sort((a, b) => b.filename.localeCompare(a.filename));
+                    }
+
+                    return result;
+                },
+
+                cleanName(name) {
+                    return name.split('.')[0].replace(/[-_]/g, ' ');
+                },
+
+                openLightbox(wp) {
+                    this.currentWp = wp;
+                    this.lightboxOpen = true;
+                    document.body.style.overflow = 'hidden';
+                },
+
+                closeLightbox() {
+                    this.lightboxOpen = false;
+                    document.body.style.overflow = 'auto';
+                }
+            }
+        }
+    </script>
+</body>
+</html>
