@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -32,17 +32,22 @@
             background-color: var(--md-sys-color-surface);
             color: var(--md-sys-color-on-surface);
             font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            -webkit-font-smoothing: antialiased;
         }
 
+        /* M3 Card: Extra Large Rounding (28px) */
         .m3-card {
             background-color: var(--md-sys-color-surface-container);
-            border-radius: 24px;
-            transition: all 0.3s cubic-bezier(0.2, 0, 0, 1);
+            border-radius: 28px;
+            transition: all 0.4s cubic-bezier(0.2, 0, 0, 1);
+            border: 1px solid transparent;
         }
 
         .m3-card:hover {
             background-color: var(--md-sys-color-surface-container-high);
-            transform: translateY(-4px);
+            transform: scale(1.02);
+            border-color: var(--md-sys-color-surface-variant);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.4);
         }
 
         .skeleton {
@@ -56,11 +61,20 @@
             100% { background-position: -200% 0; }
         }
 
-        .custom-scrollbar::-webkit-scrollbar { width: 8px; }
+        /* Segmented Button Styling */
+        .segmented-btn {
+            @apply flex items-center justify-center px-4 py-2 text-sm font-medium transition-all border-y border-m3-outline/30;
+        }
+        .segmented-btn-active {
+            @apply bg-m3-secondaryContainer text-m3-onSecondaryContainer !border-m3-outline/0;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar { width: 10px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: var(--md-sys-color-surface); }
         .custom-scrollbar::-webkit-scrollbar-thumb { 
             background: var(--md-sys-color-surface-variant); 
-            border-radius: 10px;
+            border-radius: 20px;
+            border: 2px solid var(--md-sys-color-surface);
         }
     </style>
     <script>
@@ -85,6 +99,11 @@
                             surfaceContainer: '#201f25',
                             surfaceContainerHigh: '#2a292f',
                         }
+                    },
+                    borderRadius: {
+                        'm3-xl': '28px',
+                        'm3-lg': '24px',
+                        'm3-md': '16px',
                     }
                 }
             }
@@ -94,41 +113,35 @@
 <body x-data="galleryApp()" class="custom-scrollbar overflow-x-hidden">
 
     <!-- Header -->
-    <header class="sticky top-0 z-40 bg-m3-surface/90 backdrop-blur-xl border-b border-m3-surfaceVariant/30 py-6">
-        <div class="container mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6">
-            <h1 class="text-2xl font-medium tracking-tight text-m3-onSurface">
+    <header class="sticky top-0 z-40 bg-m3-surface/90 backdrop-blur-xl py-8">
+        <div class="container mx-auto px-6 flex flex-col items-center gap-8">
+            <h1 class="text-3xl font-medium tracking-tight text-m3-onSurface">
                 NA-ive Wallpaper Collection
             </h1>
             
-            <div class="flex flex-wrap items-center gap-4 w-full md:w-auto">
+            <div class="flex flex-col md:flex-row items-center gap-6 w-full max-w-4xl">
                 <!-- Search Input M3 Style -->
-                <div class="relative flex-grow md:w-80 group">
+                <div class="relative flex-grow w-full group">
                     <input type="text" x-model="search" placeholder="Search wallpapers..." 
-                        class="w-full bg-m3-surfaceContainerHigh text-m3-onSurface border-none rounded-full py-3 px-12 focus:ring-2 focus:ring-m3-primary transition-all placeholder:text-m3-onSurfaceVariant/50">
-                    <i class="fa fa-search absolute left-5 top-1/2 -translate-y-1/2 text-m3-onSurfaceVariant"></i>
+                        class="w-full bg-m3-surfaceContainerHigh text-m3-onSurface border-none rounded-2xl py-4 px-14 focus:ring-2 focus:ring-m3-primary transition-all placeholder:text-m3-onSurfaceVariant/50 shadow-inner">
+                    <i class="fa fa-search absolute left-6 top-1/2 -translate-y-1/2 text-m3-onSurfaceVariant text-lg"></i>
                 </div>
 
-                <!-- Custom Dropdown -->
-                <div class="relative" x-data="{ open: false }" @click.away="open = false">
-                    <button @click="open = !open" 
-                        class="flex items-center gap-2 bg-m3-secondaryContainer text-m3-onSecondaryContainer px-6 py-3 rounded-full font-medium hover:opacity-90 transition-opacity">
-                        <span x-text="sortLabel()"></span>
-                        <i class="fa fa-chevron-down text-xs transition-transform" :class="open ? 'rotate-180' : ''"></i>
-                    </button>
-                    
-                    <div x-show="open" x-cloak
-                        x-transition:enter="transition ease-out duration-200"
-                        x-transition:enter-start="opacity-0 scale-95"
-                        x-transition:enter-end="opacity-100 scale-100"
-                        class="absolute right-0 mt-2 w-48 bg-m3-surfaceContainerHigh border border-m3-surfaceVariant/30 rounded-2xl shadow-2xl overflow-hidden z-50">
-                        <template x-for="option in sortOptions">
-                            <button @click="sortOrder = option.value; open = false" 
-                                class="w-full text-left px-5 py-3 hover:bg-m3-primary/10 text-m3-onSurface transition-colors text-sm"
-                                :class="sortOrder === option.value ? 'bg-m3-primary/20 text-m3-primary font-bold' : ''"
-                                x-text="option.label">
-                            </button>
-                        </template>
-                    </div>
+                <!-- Segmented Button for Sorting -->
+                <div class="flex items-stretch h-14 bg-m3-surfaceContainer rounded-2xl overflow-hidden border border-m3-outline/20 p-1 shadow-sm">
+                    <template x-for="(option, index) in sortOptions" :key="option.value">
+                        <button 
+                            @click="sortOrder = option.value"
+                            class="relative flex items-center justify-center px-5 py-2 text-xs font-semibold transition-all duration-300"
+                            :class="{
+                                'bg-m3-secondaryContainer text-m3-onSecondaryContainer rounded-xl shadow-sm': sortOrder === option.value,
+                                'text-m3-onSurfaceVariant hover:bg-m3-surfaceVariant/20': sortOrder !== option.value,
+                                'border-r border-m3-outline/10': index !== sortOptions.length - 1 && sortOrder !== option.value && sortOrder !== sortOptions[index+1].value
+                            }"
+                        >
+                            <span x-text="option.shortLabel || option.label"></span>
+                        </button>
+                    </template>
                 </div>
             </div>
         </div>
@@ -147,35 +160,32 @@
             <!-- Real Content -->
             <template x-for="wp in filteredWallpapers()" :key="wp.filename">
                 <div class="m3-card group overflow-hidden flex flex-col" x-data="{ imgLoaded: false }">
-                    <!-- Image Container -->
+                    <!-- Image Container (Rounded-t-m3-xl) -->
                     <div class="aspect-[16/10] w-full relative overflow-hidden cursor-pointer" @click="openLightbox(wp)">
-                        <!-- Skeleton for each image -->
                         <div x-show="!imgLoaded" class="absolute inset-0 skeleton"></div>
-                        
                         <img :src="wp.filename" :alt="wp.filename" 
-                            decoding="async"
-                            loading="lazy"
+                            decoding="async" loading="lazy"
                             @load="imgLoaded = true"
-                            class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                            class="w-full h-full object-cover transition-transform duration-700 cubic-bezier(0.2, 0, 0, 1) group-hover:scale-110"
                             :class="imgLoaded ? 'opacity-100' : 'opacity-0'">
                     </div>
 
                     <!-- Info Area -->
-                    <div class="p-5 flex items-center justify-between">
+                    <div class="p-6 flex items-center justify-between">
                         <div class="flex flex-col max-w-[70%]">
-                            <span class="text-sm font-medium text-m3-onSurface truncate" x-text="cleanName(wp.filename)"></span>
-                            <span class="text-[10px] text-m3-onSurfaceVariant uppercase tracking-widest mt-1" x-text="formatDate(wp.mtime)"></span>
+                            <span class="text-sm font-semibold text-m3-onSurface truncate" x-text="cleanName(wp.filename)"></span>
+                            <span class="text-[10px] text-m3-onSurfaceVariant uppercase font-bold tracking-[0.1em] mt-2" x-text="formatDate(wp.mtime)"></span>
                         </div>
-                        <div class="flex gap-1">
+                        <div class="flex gap-2">
                             <template x-if="wp.wallhaven_id">
                                 <a :href="'https://wallhaven.cc/w/' + wp.wallhaven_id" target="_blank" 
-                                    class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-m3-primaryContainer text-m3-primary transition-colors" title="Wallhaven">
-                                    <i class="fa-solid fa-link text-sm"></i>
+                                    class="w-11 h-11 flex items-center justify-center rounded-2xl bg-m3-primary/10 text-m3-primary hover:bg-m3-primaryContainer transition-all" title="Wallhaven">
+                                    <i class="fa-solid fa-link"></i>
                                 </a>
                             </template>
                             <a :href="wp.filename" download 
-                                class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-m3-secondaryContainer text-m3-secondary transition-colors" title="Download">
-                                <i class="fa fa-download text-sm"></i>
+                                class="w-11 h-11 flex items-center justify-center rounded-2xl bg-m3-secondary/10 text-m3-secondary hover:bg-m3-secondaryContainer transition-all" title="Download">
+                                <i class="fa fa-download"></i>
                             </a>
                         </div>
                     </div>
@@ -184,44 +194,47 @@
         </div>
 
         <!-- Empty State -->
-        <div x-show="!loading && filteredWallpapers().length === 0" class="text-center py-32" x-cloak>
-            <div class="bg-m3-surfaceContainer p-10 rounded-[40px] inline-block">
-                <i class="fa-solid fa-folder-open text-5xl text-m3-outline/30 mb-6 block"></i>
-                <p class="text-m3-onSurfaceVariant text-lg">No wallpapers found matches your search.</p>
+        <div x-show="!loading && filteredWallpapers().length === 0" class="text-center py-40" x-cloak>
+            <div class="bg-m3-surfaceContainer p-12 rounded-[48px] inline-block border border-m3-outline/10 shadow-xl">
+                <i class="fa-solid fa-image text-6xl text-m3-outline/20 mb-8 block"></i>
+                <p class="text-m3-onSurfaceVariant text-xl font-medium italic">No matches found in your collection.</p>
             </div>
         </div>
     </main>
 
-    <!-- Lightbox (M3 Dialog Style) -->
+    <!-- Lightbox (Improved M3 Dialog Style) -->
     <div x-show="lightboxOpen" 
-        class="fixed inset-0 z-50 flex items-center justify-center bg-m3-surface/95 backdrop-blur-sm p-4 md:p-10"
-        x-transition:enter="transition ease-out duration-300"
-        x-transition:enter-start="opacity-0"
-        x-transition:enter-end="opacity-100"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md p-4 md:p-12"
+        x-transition:enter="transition ease-out duration-400"
+        x-transition:enter-start="opacity-0 backdrop-blur-none"
+        x-transition:enter-end="opacity-100 backdrop-blur-md"
+        @click.self="closeLightbox()"
         @keydown.escape.window="closeLightbox()"
         x-cloak>
         
-        <button @click="closeLightbox()" class="absolute top-8 right-8 w-12 h-12 flex items-center justify-center bg-m3-surfaceContainerHigh rounded-full text-m3-onSurface hover:bg-m3-surfaceVariant transition-colors z-50">
-            <i class="fa fa-times text-xl"></i>
+        <button @click="closeLightbox()" class="absolute top-8 right-8 w-14 h-14 flex items-center justify-center bg-m3-surfaceContainerHigh/50 rounded-2xl text-m3-onSurface hover:bg-m3-primary/20 transition-all z-50 shadow-lg">
+            <i class="fa fa-times text-2xl"></i>
         </button>
 
-        <div class="relative max-w-7xl max-h-full flex flex-col items-center">
-            <img :src="currentWp?.filename" class="max-w-full max-h-[80vh] object-contain rounded-3xl shadow-2xl border border-m3-surfaceVariant/20">
+        <div class="relative max-w-[95vw] max-h-full flex flex-col items-center gap-8" @click.away="closeLightbox()">
+            <img :src="currentWp?.filename" class="max-w-full max-h-[80vh] object-contain rounded-[32px] shadow-2xl border border-m3-outline/20">
             
-            <div class="mt-8 flex flex-wrap items-center justify-center gap-4 bg-m3-surfaceContainerHigh/80 backdrop-blur px-8 py-4 rounded-[32px] border border-m3-surfaceVariant/30">
+            <div class="flex flex-wrap items-center justify-center gap-6 bg-m3-surfaceContainerHigh/90 backdrop-blur-xl px-10 py-5 rounded-[36px] border border-m3-outline/20 shadow-2xl">
                  <div class="flex flex-col">
-                     <span class="text-sm font-bold text-m3-onSurface" x-text="currentWp?.filename"></span>
-                     <span class="text-[10px] text-m3-onSurfaceVariant" x-text="formatDate(currentWp?.mtime)"></span>
+                     <span class="text-sm font-bold text-m3-onSurface max-w-xs truncate" x-text="currentWp?.filename"></span>
+                     <span class="text-[11px] text-m3-onSurfaceVariant font-bold uppercase tracking-wider" x-text="formatDate(currentWp?.mtime)"></span>
                  </div>
-                 <div class="h-8 w-px bg-m3-surfaceVariant/50 mx-2"></div>
-                 <a :href="currentWp?.filename" download class="bg-m3-primary text-m3-onPrimary px-6 py-2 rounded-full font-bold text-sm hover:opacity-90 transition-opacity">
-                    Download
-                 </a>
-                 <template x-if="currentWp?.wallhaven_id">
-                    <a :href="'https://wallhaven.cc/w/' + currentWp?.wallhaven_id" target="_blank" class="bg-m3-secondaryContainer text-m3-onSecondaryContainer px-6 py-2 rounded-full font-bold text-sm hover:opacity-90 transition-opacity">
-                        View Wallhaven
-                    </a>
-                 </template>
+                 <div class="h-10 w-px bg-m3-outline/20 hidden sm:block"></div>
+                 <div class="flex gap-4">
+                     <a :href="currentWp?.filename" download class="bg-m3-primary text-m3-onPrimary px-8 py-3 rounded-2xl font-bold text-sm hover:scale-105 transition-all shadow-md">
+                        Download Now
+                     </a>
+                     <template x-if="currentWp?.wallhaven_id">
+                        <a :href="'https://wallhaven.cc/w/' + currentWp?.wallhaven_id" target="_blank" class="bg-m3-secondaryContainer text-m3-onSecondaryContainer px-8 py-3 rounded-2xl font-bold text-sm hover:scale-105 transition-all shadow-md border border-m3-outline/10">
+                            Wallhaven
+                        </a>
+                     </template>
+                 </div>
             </div>
         </div>
     </div>
@@ -236,10 +249,10 @@
                 lightboxOpen: false,
                 currentWp: null,
                 sortOptions: [
-                    { label: 'Newest First', value: 'newest' },
-                    { label: 'Oldest First', value: 'oldest' },
-                    { label: 'Name A-Z', value: 'az' },
-                    { label: 'Name Z-A', value: 'za' }
+                    { label: 'Newest First', shortLabel: 'Newest', value: 'newest' },
+                    { label: 'Oldest First', shortLabel: 'Oldest', value: 'oldest' },
+                    { label: 'Name A-Z', shortLabel: 'A-Z', value: 'az' },
+                    { label: 'Name Z-A', shortLabel: 'Z-A', value: 'za' }
                 ],
 
                 init() {
@@ -250,11 +263,7 @@
                                 this.wallpapers = data;
                                 this.loading = false;
                             });
-                    }, 800); // Small delay to show off M3 skeleton
-                },
-
-                sortLabel() {
-                    return this.sortOptions.find(o => o.value === this.sortOrder).label;
+                    }, 600);
                 },
 
                 filteredWallpapers() {
@@ -276,9 +285,8 @@
                 },
 
                 cleanName(name) {
-                    // Extract name without extension and clean up
                     let base = name.split('.')[0];
-                    return base.length > 20 ? base.substring(0, 18) + '...' : base;
+                    return base.length > 22 ? base.substring(0, 20) + '...' : base;
                 },
 
                 formatDate(isoString) {
