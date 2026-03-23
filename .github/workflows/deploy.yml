@@ -23,7 +23,12 @@ jobs:
         with:
           python-version: '3.x'
 
-      - name: Generate Metadata
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install Pillow
+
+      - name: Generate Metadata & Thumbnails
         run: python .github/scripts/generate_metadata.py
 
       - name: Prepare Gallery

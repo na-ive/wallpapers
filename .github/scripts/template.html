@@ -106,7 +106,7 @@
     <header class="sticky top-0 z-40 bg-m3-surface/80 backdrop-blur-md border-b border-m3-surfaceVariant/20 py-4">
         <div class="container mx-auto px-4 flex flex-col lg:flex-row items-center justify-between gap-4">
             <div class="flex items-center gap-3">
-                <i class="fa-solid fa-images text-m3-primary text-xl"></i>
+                <i class="fa-solid fa-images text-m3-onSurface text-xl"></i>
                 <h1 class="text-xl font-semibold text-m3-onSurface whitespace-nowrap">
                     NA-ive Wallpaper Collection
                 </h1>
@@ -149,14 +149,12 @@
             </template>
 
             <template x-for="wp in filteredWallpapers()" :key="wp.filename">
-                <div class="m3-card group overflow-hidden flex flex-col" x-data="{ imgLoaded: false }">
-                    <div class="aspect-video w-full relative overflow-hidden cursor-pointer" @click="openLightbox(wp)">
-                        <div x-show="!imgLoaded" class="absolute inset-0 skeleton"></div>
-                        <img :src="wp.filename" :alt="wp.filename" 
+                <div class="m3-card group overflow-hidden flex flex-col">
+                    <div class="aspect-video w-full relative overflow-hidden cursor-pointer bg-m3-surfaceVariant/10" @click="openLightbox(wp)">
+                        <!-- Thumbnail loading is instant, no pop logic needed -->
+                        <img :src="wp.thumbnail" :alt="wp.filename" 
                             decoding="async" loading="lazy"
-                            @load="imgLoaded = true"
-                            class="w-full h-full object-cover transition-opacity duration-300"
-                            :class="imgLoaded ? 'opacity-100' : 'opacity-0'">
+                            class="w-full h-full object-cover">
                     </div>
                     <div class="p-3 flex items-center justify-between gap-2">
                         <span class="text-xs font-medium text-m3-onSurface truncate flex-grow" x-text="cleanName(wp.filename)"></span>
@@ -180,16 +178,19 @@
 
     <!-- Lightbox -->
     <div x-show="lightboxOpen" 
-        class="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm p-4 md:p-8"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-m3-surface/70 backdrop-blur-sm p-4 md:p-8"
         x-transition:enter="transition ease-out duration-300"
         x-transition:enter-start="opacity-0 scale-95"
         x-transition:enter-end="opacity-100 scale-100"
+        x-transition:leave="transition ease-in duration-200"
+        x-transition:leave-start="opacity-100 scale-100"
+        x-transition:leave-end="opacity-0 scale-95"
         @click.self="closeLightbox()"
         @keydown.escape.window="closeLightbox()"
         x-cloak>
         
         <div class="relative max-w-[95vw] w-full h-full flex flex-col items-center justify-center" @click.self="closeLightbox()">
-            <img :src="currentWp?.filename" class="max-w-full max-h-[85vh] object-contain rounded-2xl shadow-2xl">
+            <img :src="currentWp?.filename" class="max-w-full max-h-[85vh] object-contain rounded-2xl shadow-2xl border border-m3-surfaceVariant/20">
             
             <div class="mt-6 flex items-center gap-2 bg-m3-surfaceContainerHigh/90 backdrop-blur-xl px-6 py-4 rounded-[28px] border border-m3-outline/20 shadow-2xl">
                  <div class="flex flex-col mr-4 overflow-hidden max-w-[120px] sm:max-w-[300px]">
