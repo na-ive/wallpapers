@@ -13,23 +13,23 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout 🛎️
+      - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Set up Python 🐍
+      - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.x'
 
-      - name: Generate Metadata 📊
+      - name: Generate Metadata
         run: python .github/scripts/generate_metadata.py
 
-      - name: Prepare Gallery 🎨
+      - name: Prepare Gallery
         run: cp .github/scripts/template.html index.html
 
-      - name: Deploy to GH Pages 🚀
+      - name: Deploy to GH Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
