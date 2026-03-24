@@ -41,8 +41,8 @@
 
         .m3-card {
             background-color: var(--md-sys-color-surface-container);
-            border-radius: 20px;
-            will-change: transform, opacity;
+            border-radius: 24px;
+            will-change: transform, border-radius;
         }
 
         .m3-card:hover {
@@ -68,23 +68,33 @@
             border-radius: 10px;
         }
 
+        /* Pill Button Transition Fix: Using 4xl instead of full */
         .pill-btn {
-            transition: all 0.5s cubic-bezier(0.2, 0, 0, 1);
+            transition: all 0.5s cubic-bezier(0.2, 0, 0, 1) !important;
         }
         .pill-btn:hover, .pill-btn.active {
-            border-radius: 9999px !important;
+            border-radius: 2rem !important; /* 4xl equivalent */
         }
 
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-        .zoom-img {
+        /* Improved Zoom Logic */
+        .zoom-container {
             cursor: zoom-in;
-            transition: transform 0.3s cubic-bezier(0.2, 0, 0, 1);
+            transition: all 0.5s cubic-bezier(0.2, 0, 0, 1);
         }
-        .zoom-img.zoomed {
+        .zoom-container.zoomed {
             cursor: zoom-out;
-            transform: scale(2);
+            width: 150vw;
+            height: 150vh;
+            max-width: none;
+            max-height: none;
+        }
+        .zoom-container img {
+            width: 100%;
+            height: 100%;
+            object-contain: contain;
         }
     </style>
     <script>
@@ -158,7 +168,7 @@
                                     @click="sortOrder = option.value"
                                     class="pill-btn whitespace-nowrap px-4 py-2 text-xs font-semibold m3-transition"
                                     :class="{
-                                        'bg-m3-secondaryContainer text-m3-onSecondaryContainer active': sortOrder === option.value,
+                                        'bg-m3-secondaryContainer text-m3-onSecondaryContainer active shadow-md': sortOrder === option.value,
                                         'bg-m3-surfaceVariant/20 text-m3-onSurfaceVariant': sortOrder !== option.value,
                                         'rounded-l-2xl rounded-r-md': index === 0 && sortOrder !== option.value,
                                         'rounded-r-2xl rounded-l-md': index === sortOptions.length - 1 && sortOrder !== option.value,
@@ -198,7 +208,7 @@
                         class="pill-btn whitespace-nowrap flex items-center justify-center m3-transition h-9 w-9 md:w-auto md:px-4 md:py-2 bg-transparent md:bg-m3-primaryContainer text-m3-onSurface md:text-m3-onPrimaryContainer rounded-full md:rounded-md hover:bg-m3-surfaceVariant/20 md:hover:bg-m3-primaryContainer active:scale-90"
                         title="Surprise Me!">
                         <i class="fa-solid fa-dice-five md:mr-2 text-lg"></i>
-                        <span class="hidden md:inline text-xs font-semibold">Surprise Me</span>
+                        <span class="hidden md:inline text-xs font-semibold text-center">Surprise Me</span>
                     </button>
                 </div>
 
@@ -216,11 +226,14 @@
             </template>
 
             <template x-for="wp in filteredWallpapers()" :key="wp.filename">
-                <div class="m3-card group overflow-hidden flex flex-col m3-transition relative border border-transparent hover:border-m3-outline/10">
-                    <!-- Dominant Color Accent -->
-                    <div class="absolute top-0 left-0 w-full h-1 z-10" :style="'background-color: ' + wp.color"></div>
-                    
+                <div class="m3-card group overflow-hidden flex flex-col m3-transition relative">
                     <div class="aspect-video w-full relative overflow-hidden cursor-pointer bg-m3-surfaceVariant/10" @click="openLightbox(wp)">
+                        <!-- Color Swatch Tag -->
+                        <div class="absolute top-3 left-3 z-10 flex items-center gap-1.5 bg-black/30 backdrop-blur-md px-2 py-1 rounded-full border border-white/10" title="Dominant Color">
+                            <div class="w-2 h-2 rounded-full shadow-sm" :style="'background-color: ' + wp.color"></div>
+                            <span class="text-[8px] font-bold text-white/90 uppercase tracking-tighter" x-text="wp.color"></span>
+                        </div>
+                        
                         <img :src="wp.thumbnail" :alt="wp.filename" 
                             decoding="async" loading="lazy"
                             class="w-full h-full object-cover m3-transition group-hover:scale-105">
@@ -230,12 +243,12 @@
                         <div class="flex gap-1 shrink-0">
                             <template x-if="wp.wallhaven_id">
                                 <a :href="'https://wallhaven.cc/w/' + wp.wallhaven_id" target="_blank" 
-                                    class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-m3-secondary/20 text-m3-secondary m3-transition text-xs" title="Wallhaven">
+                                    class="w-8 h-8 flex items-center justify-center rounded-lg bg-m3-secondaryContainer/30 text-m3-onSecondaryContainer hover:bg-m3-primary/20 hover:text-m3-primary m3-transition text-xs" title="Wallhaven">
                                     <i class="fa-solid fa-link"></i>
                                 </a>
                             </template>
                             <a :href="wp.filename" download 
-                                class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-m3-secondary/20 text-m3-secondary m3-transition text-xs" title="Download">
+                                class="w-8 h-8 flex items-center justify-center rounded-lg bg-m3-secondaryContainer/30 text-m3-onSecondaryContainer hover:bg-m3-primary/20 hover:text-m3-primary m3-transition text-xs" title="Download">
                                 <i class="fa fa-download"></i>
                             </a>
                         </div>
@@ -268,12 +281,13 @@
         @keydown.escape.window="closeLightbox()"
         x-cloak>
         
-        <div class="relative max-w-[95vw] w-full h-full flex flex-col items-center justify-center" @click.self="closeLightbox()">
-            <div class="relative overflow-auto no-scrollbar max-h-[85vh] rounded-2xl shadow-2xl" x-data="{ zoomed: false }">
-                <img :src="currentWp?.filename" 
-                    @click="zoomed = !zoomed"
-                    class="max-w-full max-h-[85vh] object-contain border border-m3-surfaceVariant/20 m3-transition zoom-img"
-                    :class="zoomed ? 'zoomed' : ''">
+        <div class="relative max-w-full w-full h-full flex flex-col items-center justify-center overflow-hidden" @click.self="closeLightbox()">
+            
+            <div class="relative overflow-auto custom-scrollbar max-w-[95vw] max-h-[85vh] rounded-2xl shadow-2xl flex items-center justify-center bg-black/20" x-data="{ zoomed: false }" @click.self="closeLightbox()">
+                <div class="zoom-container" :class="zoomed ? 'zoomed' : ''" @click="zoomed = !zoomed">
+                    <img :src="currentWp?.filename" 
+                        class="object-contain m3-transition shadow-2xl">
+                </div>
             </div>
             
             <div class="mt-4 md:mt-6 flex items-center gap-2 bg-m3-surfaceContainerHigh/90 backdrop-blur-xl px-4 py-3 md:px-6 md:py-4 rounded-[28px] border border-m3-outline/20 shadow-2xl m3-transition">
