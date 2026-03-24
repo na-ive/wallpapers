@@ -35,16 +35,20 @@
             -webkit-font-smoothing: antialiased;
         }
 
+        /* M3 Transitions: Smooth & Intentional (500ms) */
+        .m3-transition {
+            transition: all 0.5s cubic-bezier(0.2, 0, 0, 1);
+        }
+
         .m3-card {
             background-color: var(--md-sys-color-surface-container);
             border-radius: 20px;
-            transition: all 0.3s ease;
-            will-change: transform;
+            will-change: transform, opacity;
         }
 
         .m3-card:hover {
             background-color: var(--md-sys-color-surface-container-high);
-            transform: translateY(-2px);
+            transform: translateY(-4px);
         }
 
         .skeleton {
@@ -66,7 +70,7 @@
         }
 
         .pill-btn {
-            transition: all 0.3s cubic-bezier(0.2, 0, 0, 1);
+            transition: all 0.5s cubic-bezier(0.2, 0, 0, 1);
         }
         .pill-btn:hover, .pill-btn.active {
             border-radius: 9999px !important;
@@ -119,21 +123,21 @@
 
             <div class="flex items-center gap-2 md:gap-4 flex-grow justify-end" :class="searchOpen ? 'w-full' : ''">
                 
-                <div class="relative flex items-center transition-all duration-300" :class="searchOpen ? 'w-full' : 'w-auto'">
+                <div class="relative flex items-center m3-transition" :class="searchOpen ? 'w-full' : 'w-auto'">
                     <div class="hidden md:block relative w-64">
                         <input type="text" x-model="search" placeholder="Search..." 
-                            class="w-full bg-m3-surfaceContainerHigh text-m3-onSurface border-none rounded-xl py-2 px-10 focus:ring-2 focus:ring-m3-primary transition-all text-sm">
+                            class="w-full bg-m3-surfaceContainerHigh text-m3-onSurface border-none rounded-xl py-2 px-10 focus:ring-2 focus:ring-m3-primary m3-transition text-sm">
                         <i class="fa fa-search absolute left-3 top-1/2 -translate-y-1/2 text-m3-onSurfaceVariant/70 text-xs"></i>
                     </div>
 
-                    <div class="md:hidden flex items-center gap-2 w-full" x-show="searchOpen" x-cloak x-transition>
-                        <button @click="searchOpen = false; search = ''" class="p-2 text-m3-onSurfaceVariant transition-colors hover:text-m3-onSurface">
+                    <div class="md:hidden flex items-center gap-2 w-full" x-show="searchOpen" x-cloak x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-x-4" x-transition:enter-end="opacity-100 translate-x-0">
+                        <button @click="searchOpen = false; search = ''" class="p-2 text-m3-onSurfaceVariant m3-transition hover:text-m3-onSurface">
                             <i class="fa fa-arrow-left"></i>
                         </button>
                         <input type="text" x-model="search" placeholder="Search wallpapers..." autofocus
-                            class="w-full bg-m3-surfaceContainerHigh text-m3-onSurface border-none rounded-xl py-2 px-4 focus:ring-2 focus:ring-m3-primary text-sm transition-all">
+                            class="w-full bg-m3-surfaceContainerHigh text-m3-onSurface border-none rounded-xl py-2 px-4 focus:ring-2 focus:ring-m3-primary text-sm m3-transition">
                     </div>
-                    <button @click="searchOpen = true" x-show="!searchOpen" class="md:hidden p-2 text-m3-onSurface transition-all hover:bg-m3-surfaceVariant/20 rounded-full">
+                    <button @click="searchOpen = true" x-show="!searchOpen" class="md:hidden p-2 text-m3-onSurface m3-transition hover:bg-m3-surfaceVariant/20 rounded-full">
                         <i class="fa fa-search"></i>
                     </button>
                 </div>
@@ -145,7 +149,7 @@
                             <template x-for="(option, index) in sortOptions" :key="option.value">
                                 <button 
                                     @click="sortOrder = option.value"
-                                    class="pill-btn whitespace-nowrap px-4 py-2 text-xs font-semibold transition-all duration-300"
+                                    class="pill-btn whitespace-nowrap px-4 py-2 text-xs font-semibold m3-transition"
                                     :class="{
                                         'bg-m3-secondaryContainer text-m3-onSecondaryContainer active': sortOrder === option.value,
                                         'bg-m3-surfaceVariant/20 text-m3-onSurfaceVariant': sortOrder !== option.value,
@@ -159,18 +163,21 @@
                         </div>
 
                         <div class="md:hidden relative" x-data="{ open: false }">
-                            <button @click="open = !open" class="p-2 text-m3-onSurface hover:bg-m3-surfaceVariant/20 rounded-full transition-all">
+                            <button @click="open = !open" class="p-2 text-m3-onSurface m3-transition hover:bg-m3-surfaceVariant/20 rounded-full">
                                 <i class="fa-solid fa-arrow-down-wide-short"></i>
                             </button>
                             <div x-show="open" @click.away="open = false" x-cloak
-                                x-transition:enter="transition ease-out duration-200"
+                                x-transition:enter="transition ease-out duration-300"
                                 x-transition:enter-start="opacity-0 scale-95"
                                 x-transition:enter-end="opacity-100 scale-100"
-                                class="absolute right-0 mt-2 w-40 bg-m3-surfaceContainerHigh border border-m3-surfaceVariant/30 rounded-2xl shadow-2xl z-50">
+                                x-transition:leave="transition ease-in duration-200"
+                                x-transition:leave-start="opacity-100 scale-100"
+                                x-transition:leave-end="opacity-0 scale-95"
+                                class="absolute right-0 mt-2 w-40 bg-m3-surfaceContainerHigh border border-m3-surfaceVariant/30 rounded-2xl shadow-2xl z-50 overflow-hidden">
                                 <div class="py-2">
                                     <template x-for="option in sortOptions" :key="option.value">
                                         <button @click="sortOrder = option.value; open = false" 
-                                            class="w-full text-left px-4 py-3 text-sm text-m3-onSurface hover:bg-m3-primary/10 transition-all"
+                                            class="w-full text-left px-4 py-3 text-sm text-m3-onSurface hover:bg-m3-primary/10 m3-transition"
                                             :class="sortOrder === option.value ? 'bg-m3-primary/20 text-m3-primary font-bold' : ''"
                                             x-text="option.label">
                                         </button>
@@ -180,9 +187,9 @@
                         </div>
                     </div>
 
-                    <!-- Surprise Me Button (Differentiated Color & Spacing) -->
+                    <!-- Surprise Me Button -->
                     <button @click="openRandom()" 
-                        class="pill-btn whitespace-nowrap flex items-center justify-center transition-all duration-300 h-9 w-9 md:w-auto md:px-4 md:py-2 bg-m3-primaryContainer text-m3-onPrimaryContainer rounded-full md:rounded-md shadow-sm hover:shadow-md"
+                        class="pill-btn whitespace-nowrap flex items-center justify-center m3-transition h-9 w-9 md:w-auto md:px-4 md:py-2 bg-m3-primaryContainer text-m3-onPrimaryContainer rounded-full md:rounded-md shadow-sm hover:shadow-md active:scale-95"
                         title="Surprise Me!">
                         <i class="fa-solid fa-shuffle md:mr-2"></i>
                         <span class="hidden md:inline text-xs font-semibold">Surprise Me</span>
@@ -203,23 +210,23 @@
             </template>
 
             <template x-for="wp in filteredWallpapers()" :key="wp.filename">
-                <div class="m3-card group overflow-hidden flex flex-col">
+                <div class="m3-card group overflow-hidden flex flex-col m3-transition">
                     <div class="aspect-video w-full relative overflow-hidden cursor-pointer bg-m3-surfaceVariant/10" @click="openLightbox(wp)">
                         <img :src="wp.thumbnail" :alt="wp.filename" 
                             decoding="async" loading="lazy"
-                            class="w-full h-full object-cover transition-opacity duration-300">
+                            class="w-full h-full object-cover m3-transition group-hover:scale-105">
                     </div>
                     <div class="p-3 flex items-center justify-between gap-2">
                         <span class="text-[10px] md:text-xs font-medium text-m3-onSurface truncate flex-grow" x-text="cleanName(wp.filename)"></span>
                         <div class="flex gap-1 shrink-0">
                             <template x-if="wp.wallhaven_id">
                                 <a :href="'https://wallhaven.cc/w/' + wp.wallhaven_id" target="_blank" 
-                                    class="w-7 h-7 md:w-8 md:h-8 flex items-center justify-center rounded-lg hover:bg-m3-primary/20 text-m3-primary transition-all text-xs">
+                                    class="w-7 h-7 md:w-8 md:h-8 flex items-center justify-center rounded-lg hover:bg-m3-primary/20 text-m3-primary m3-transition text-xs">
                                     <i class="fa-solid fa-link"></i>
                                 </a>
                             </template>
                             <a :href="wp.filename" download 
-                                class="w-7 h-7 md:w-8 md:h-8 flex items-center justify-center rounded-lg hover:bg-m3-secondary/20 text-m3-secondary transition-all text-xs">
+                                class="w-7 h-7 md:w-8 md:h-8 flex items-center justify-center rounded-lg hover:bg-m3-secondary/20 text-m3-secondary m3-transition text-xs">
                                 <i class="fa fa-download"></i>
                             </a>
                         </div>
@@ -232,7 +239,7 @@
         <div x-show="!loading && filteredWallpapers().length > 0" class="mt-12 mb-8 flex flex-col items-center gap-2 py-4" x-cloak>
             <p class="text-m3-onSurfaceVariant/40 text-sm font-medium italic text-center px-4">That's all for now! More wallpapers are coming soon.</p>
             <a href="https://github.com/na-ive/wallpapers" target="_blank" 
-                class="flex items-center gap-2 px-4 py-2 text-m3-onSurfaceVariant/60 hover:text-m3-primary transition-all text-xs font-bold">
+                class="flex items-center gap-2 px-4 py-2 text-m3-onSurfaceVariant/60 hover:text-m3-primary m3-transition text-xs font-bold">
                 <i class="fa-brands fa-github text-base"></i>
                 <span>Give this repo a star</span>
             </a>
@@ -242,29 +249,29 @@
     <!-- Lightbox -->
     <div x-show="lightboxOpen" 
         class="fixed inset-0 z-50 flex items-center justify-center bg-m3-surface/70 backdrop-blur-sm p-4 md:p-8"
-        x-transition:enter="transition ease-out duration-300"
-        x-transition:enter-start="opacity-0 scale-95"
-        x-transition:enter-end="opacity-100 scale-100"
-        x-transition:leave="transition ease-in duration-200"
-        x-transition:leave-start="opacity-100 scale-100"
-        x-transition:leave-end="opacity-0 scale-95"
+        x-transition:enter="transition cubic-bezier(0.2, 0, 0, 1) duration-500"
+        x-transition:enter-start="opacity-0 backdrop-blur-none scale-95"
+        x-transition:enter-end="opacity-100 backdrop-blur-sm scale-100"
+        x-transition:leave="transition cubic-bezier(0.2, 0, 0, 1) duration-400"
+        x-transition:leave-start="opacity-100 backdrop-blur-sm scale-100"
+        x-transition:leave-end="opacity-0 backdrop-blur-none scale-95"
         @click.self="closeLightbox()"
         @keydown.escape.window="closeLightbox()"
         x-cloak>
         
         <div class="relative max-w-[95vw] w-full h-full flex flex-col items-center justify-center" @click.self="closeLightbox()">
-            <img :src="currentWp?.filename" class="max-w-full max-h-[85vh] object-contain rounded-2xl shadow-2xl border border-m3-surfaceVariant/20">
+            <img :src="currentWp?.filename" class="max-w-full max-h-[85vh] object-contain rounded-2xl shadow-2xl border border-m3-surfaceVariant/20 m3-transition">
             
-            <div class="mt-4 md:mt-6 flex items-center gap-2 bg-m3-surfaceContainerHigh/90 backdrop-blur-xl px-4 py-3 md:px-6 md:py-4 rounded-[28px] border border-m3-outline/20 shadow-2xl">
+            <div class="mt-4 md:mt-6 flex items-center gap-2 bg-m3-surfaceContainerHigh/90 backdrop-blur-xl px-4 py-3 md:px-6 md:py-4 rounded-[28px] border border-m3-outline/20 shadow-2xl m3-transition">
                  <div class="flex flex-col mr-2 md:mr-4 overflow-hidden max-w-[100px] sm:max-w-[300px]">
                      <span class="text-[10px] md:text-xs font-bold text-m3-onSurface truncate" x-text="currentWp?.filename"></span>
                  </div>
                  <div class="flex items-center gap-2">
-                     <a :href="currentWp?.filename" download class="bg-m3-primary text-m3-onPrimary px-4 py-2 md:px-6 md:py-2.5 rounded-2xl font-bold text-[10px] md:text-xs hover:scale-105 transition-all">
+                     <a :href="currentWp?.filename" download class="bg-m3-primary text-m3-onPrimary px-4 py-2 md:px-6 md:py-2.5 rounded-2xl font-bold text-[10px] md:text-xs hover:scale-105 active:scale-95 m3-transition shadow-lg">
                         Download
                      </a>
                      <template x-if="currentWp?.wallhaven_id">
-                        <a :href="'https://wallhaven.cc/w/' + currentWp?.wallhaven_id" target="_blank" class="bg-m3-secondaryContainer text-m3-onSecondaryContainer px-4 py-2 md:px-6 md:py-2.5 rounded-2xl font-bold text-[10px] md:text-xs hover:scale-105 transition-all">
+                        <a :href="'https://wallhaven.cc/w/' + currentWp?.wallhaven_id" target="_blank" class="bg-m3-secondaryContainer text-m3-onSecondaryContainer px-4 py-2 md:px-6 md:py-2.5 rounded-2xl font-bold text-[10px] md:text-xs hover:scale-105 active:scale-95 m3-transition border border-m3-outline/10">
                             Wallhaven
                         </a>
                      </template>
