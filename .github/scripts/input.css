@@ -1,6 +1,22 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@theme {
+  --color-m3-primary: #c7bfff;
+  --color-m3-onPrimary: #2f285f;
+  --color-m3-primaryContainer: #463f77;
+  --color-m3-onPrimaryContainer: #e5deff;
+  --color-m3-secondary: #c8c3dc;
+  --color-m3-onSecondary: #312e41;
+  --color-m3-secondaryContainer: #474459;
+  --color-m3-onSecondaryContainer: #e5dff9;
+  --color-m3-surface: #141318;
+  --color-m3-onSurface: #e5e1e9;
+  --color-m3-surfaceVariant: #47464f;
+  --color-m3-onSurfaceVariant: #c9c5d0;
+  --color-m3-outline: #928f99;
+  --color-m3-surfaceContainer: #201f25;
+  --color-m3-surfaceContainerHigh: #2a292f;
+}
 
 @layer base {
   :root {
