@@ -31,8 +31,14 @@ jobs:
       - name: Generate Metadata & Thumbnails
         run: python .github/scripts/generate_metadata.py
 
-      - name: Prepare Gallery
+      - name: Prepare HTML
         run: cp .github/scripts/template.html index.html
+
+      - name: Install Tailwind CLI & Build CSS
+        run: |
+          curl -sLO https://github.com/tailwindlabs/tailwindcss/releases/latest/download/tailwindcss-linux-x64
+          chmod +x tailwindcss-linux-x64
+          ./tailwindcss-linux-x64 -i .github/scripts/input.css -o style.css --minify
 
       - name: Deploy to GH Pages
         uses: peaceiris/actions-gh-pages@v3
@@ -41,4 +47,4 @@ jobs:
           publish_dir: .
           publish_branch: gh-pages
           force_orphan: true
-          exclude_assets: '.github,README.md'
+          exclude_assets: '.github,README.md,tailwindcss-linux-x64'

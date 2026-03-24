@@ -4,30 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NA-ive Wallpaper Collection</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="style.css">
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         [x-cloak] { display: none !important; }
         
-        :root {
-            --md-sys-color-primary: #c7bfff;
-            --md-sys-color-on-primary: #2f285f;
-            --md-sys-color-primary-container: #463f77;
-            --md-sys-color-on-primary-container: #e5deff;
-            --md-sys-color-secondary: #c8c3dc;
-            --md-sys-color-on-secondary: #312e41;
-            --md-sys-color-secondary-container: #474459;
-            --md-sys-color-on-secondary-container: #e5dff9;
-            --md-sys-color-surface: #141318;
-            --md-sys-color-on-surface: #e5e1e9;
-            --md-sys-color-surface-variant: #47464f;
-            --md-sys-color-on-surface-variant: #c9c5d0;
-            --md-sys-color-outline: #928f99;
-            --md-sys-color-surface-container: #201f25;
-            --md-sys-color-surface-container-high: #2a292f;
-        }
-
         body {
             background-color: var(--md-sys-color-surface);
             color: var(--md-sys-color-on-surface);
@@ -78,33 +60,6 @@
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        m3: {
-                            primary: '#c7bfff',
-                            onPrimary: '#2f285f',
-                            primaryContainer: '#463f77',
-                            onPrimaryContainer: '#e5deff',
-                            secondary: '#c8c3dc',
-                            onSecondary: '#312e41',
-                            secondaryContainer: '#474459',
-                            onSecondaryContainer: '#e5dff9',
-                            surface: '#141318',
-                            onSurface: '#e5e1e9',
-                            surfaceVariant: '#47464f',
-                            onSurfaceVariant: '#c9c5d0',
-                            outline: '#928f99',
-                            surfaceContainer: '#201f25',
-                            surfaceContainerHigh: '#2a292f',
-                        }
-                    }
-                }
-            }
-        }
-    </script>
 </head>
 <body x-data="galleryApp()" class="custom-scrollbar overflow-x-hidden">
 
