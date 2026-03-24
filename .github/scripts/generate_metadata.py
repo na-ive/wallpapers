@@ -27,42 +27,55 @@ def get_git_mtime(filename):
         if result.stdout.strip():
             return result.stdout.strip()
     except Exception as e:
-        print(f"Error getting git mtime for {filename}: {e}")
+        pass
     return datetime.datetime.fromtimestamp(os.stat(filename).st_mtime).isoformat()
+
+def get_dominant_color(img):
+    try:
+        # Resize to 1x1 to get average color
+        img = img.convert('RGB')
+        img = img.resize((1, 1), resample=Image.Resampling.BILINEAR)
+        color = img.getpixel((0, 0))
+        return '#{:02x}{:02x}{:02x}'.format(*color)
+    except:
+        return '#47464f' # Fallback to surface variant color
 
 def generate_metadata():
     if not os.path.exists(THUMB_DIR):
         os.makedirs(THUMB_DIR)
 
-    wallpapers = []
-    files = [f for f in os.listdir('.') if os.path.isfile(f)]
+    # Clean up old thumbnails if original is gone
+    existing_files = [f for f in os.listdir('.') if os.path.isfile(f)]
+    image_files = [f for f in existing_files if os.path.splitext(f)[1].lower() in IMAGE_EXTENSIONS]
     
-    for filename in files:
-        ext = os.path.splitext(filename)[1].lower()
-        if ext in IMAGE_EXTENSIONS:
-            mtime = get_git_mtime(filename)
-            
-            # Use .webp for even better performance in thumbnails
-            thumb_name = f"thumb_{os.path.splitext(filename)[0]}.webp"
-            thumb_path = os.path.join(THUMB_DIR, thumb_name)
-            
-            try:
+    wallpapers = []
+    
+    for filename in image_files:
+        mtime = get_git_mtime(filename)
+        
+        thumb_name = f"thumb_{os.path.splitext(filename)[0]}.webp"
+        thumb_path = os.path.join(THUMB_DIR, thumb_name)
+        
+        dominant_color = '#47464f'
+        try:
+            with Image.open(filename) as img:
+                dominant_color = get_dominant_color(img)
                 if not os.path.exists(thumb_path):
-                    with Image.open(filename) as img:
-                        img.thumbnail(THUMB_SIZE)
-                        # Save as WebP for list view optimization
-                        img.save(thumb_path, 'WEBP', optimize=True, quality=85)
-            except Exception as e:
-                print(f"Error generating thumbnail for {filename}: {e}")
-                thumb_path = filename
-            
-            wallpaper = {
-                "filename": filename,
-                "thumbnail": thumb_path,
-                "mtime": mtime,
-                "wallhaven_id": get_wallhaven_id(filename)
-            }
-            wallpapers.append(wallpaper)
+                    thumb_img = img.copy()
+                    thumb_img.thumbnail(THUMB_SIZE)
+                    thumb_img.save(thumb_path, 'WEBP', optimize=True, quality=85)
+        except Exception as e:
+            print(f"Error processing {filename}: {e}")
+            thumb_path = filename
+        
+        wallpaper = {
+            "filename": filename,
+            "thumbnail": thumb_path,
+            "mtime": mtime,
+            "color": dominant_color,
+            "wallhaven_id": get_wallhaven_id(filename)
+        }
+        wallpapers.append(wallpaper)
             
     wallpapers.sort(key=lambda x: x['mtime'], reverse=True)
     

@@ -35,7 +35,6 @@
             -webkit-font-smoothing: antialiased;
         }
 
-        /* M3 Transitions: Smooth & Intentional (500ms) */
         .m3-transition {
             transition: all 0.5s cubic-bezier(0.2, 0, 0, 1);
         }
@@ -78,6 +77,15 @@
 
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        .zoom-img {
+            cursor: zoom-in;
+            transition: transform 0.3s cubic-bezier(0.2, 0, 0, 1);
+        }
+        .zoom-img.zoomed {
+            cursor: zoom-out;
+            transform: scale(2);
+        }
     </style>
     <script>
         tailwind.config = {
@@ -143,7 +151,6 @@
                 </div>
 
                 <div class="flex items-center gap-1 md:gap-4 shrink-0" x-show="!searchOpen">
-                    <!-- Sorting Group -->
                     <div class="flex items-center">
                         <div class="hidden md:flex gap-1 no-scrollbar overflow-x-auto">
                             <template x-for="(option, index) in sortOptions" :key="option.value">
@@ -173,7 +180,7 @@
                                 x-transition:leave="transition ease-in duration-200"
                                 x-transition:leave-start="opacity-100 scale-100"
                                 x-transition:leave-end="opacity-0 scale-95"
-                                class="absolute right-0 mt-2 w-40 bg-m3-surfaceContainerHigh border border-m3-surfaceVariant/30 rounded-2xl shadow-2xl z-50 overflow-hidden">
+                                class="absolute right-0 mt-2 w-40 bg-m3-surfaceContainerHigh border border-m3-surfaceVariant/30 rounded-2xl shadow-2xl z-50 overflow-hidden text-center">
                                 <div class="py-2">
                                     <template x-for="option in sortOptions" :key="option.value">
                                         <button @click="sortOrder = option.value; open = false" 
@@ -187,11 +194,10 @@
                         </div>
                     </div>
 
-                    <!-- Surprise Me Button (No Background on Mobile) -->
                     <button @click="openRandom()" 
                         class="pill-btn whitespace-nowrap flex items-center justify-center m3-transition h-9 w-9 md:w-auto md:px-4 md:py-2 bg-transparent md:bg-m3-primaryContainer text-m3-onSurface md:text-m3-onPrimaryContainer rounded-full md:rounded-md hover:bg-m3-surfaceVariant/20 md:hover:bg-m3-primaryContainer active:scale-90"
                         title="Surprise Me!">
-                        <i class="fa-solid fa-shuffle md:mr-2"></i>
+                        <i class="fa-solid fa-dice-five md:mr-2 text-lg"></i>
                         <span class="hidden md:inline text-xs font-semibold">Surprise Me</span>
                     </button>
                 </div>
@@ -202,7 +208,7 @@
 
     <!-- Gallery Grid -->
     <main class="container mx-auto px-4 py-6">
-        <div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
             <template x-if="loading">
                 <template x-for="i in 8">
                     <div class="m3-card aspect-video skeleton"></div>
@@ -210,23 +216,26 @@
             </template>
 
             <template x-for="wp in filteredWallpapers()" :key="wp.filename">
-                <div class="m3-card group overflow-hidden flex flex-col m3-transition">
+                <div class="m3-card group overflow-hidden flex flex-col m3-transition relative border border-transparent hover:border-m3-outline/10">
+                    <!-- Dominant Color Accent -->
+                    <div class="absolute top-0 left-0 w-full h-1 z-10" :style="'background-color: ' + wp.color"></div>
+                    
                     <div class="aspect-video w-full relative overflow-hidden cursor-pointer bg-m3-surfaceVariant/10" @click="openLightbox(wp)">
                         <img :src="wp.thumbnail" :alt="wp.filename" 
                             decoding="async" loading="lazy"
                             class="w-full h-full object-cover m3-transition group-hover:scale-105">
                     </div>
-                    <div class="p-3 flex items-center justify-between gap-2">
+                    <div class="p-3 md:p-4 flex items-center justify-between gap-2">
                         <span class="text-[10px] md:text-xs font-medium text-m3-onSurface truncate flex-grow" x-text="cleanName(wp.filename)"></span>
                         <div class="flex gap-1 shrink-0">
                             <template x-if="wp.wallhaven_id">
                                 <a :href="'https://wallhaven.cc/w/' + wp.wallhaven_id" target="_blank" 
-                                    class="w-7 h-7 md:w-8 md:h-8 flex items-center justify-center rounded-lg hover:bg-m3-primary/20 text-m3-primary m3-transition text-xs">
+                                    class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-m3-secondary/20 text-m3-secondary m3-transition text-xs" title="Wallhaven">
                                     <i class="fa-solid fa-link"></i>
                                 </a>
                             </template>
                             <a :href="wp.filename" download 
-                                class="w-7 h-7 md:w-8 md:h-8 flex items-center justify-center rounded-lg hover:bg-m3-secondary/20 text-m3-secondary m3-transition text-xs">
+                                class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-m3-secondary/20 text-m3-secondary m3-transition text-xs" title="Download">
                                 <i class="fa fa-download"></i>
                             </a>
                         </div>
@@ -260,7 +269,12 @@
         x-cloak>
         
         <div class="relative max-w-[95vw] w-full h-full flex flex-col items-center justify-center" @click.self="closeLightbox()">
-            <img :src="currentWp?.filename" class="max-w-full max-h-[85vh] object-contain rounded-2xl shadow-2xl border border-m3-surfaceVariant/20 m3-transition">
+            <div class="relative overflow-auto no-scrollbar max-h-[85vh] rounded-2xl shadow-2xl" x-data="{ zoomed: false }">
+                <img :src="currentWp?.filename" 
+                    @click="zoomed = !zoomed"
+                    class="max-w-full max-h-[85vh] object-contain border border-m3-surfaceVariant/20 m3-transition zoom-img"
+                    :class="zoomed ? 'zoomed' : ''">
+            </div>
             
             <div class="mt-4 md:mt-6 flex items-center gap-2 bg-m3-surfaceContainerHigh/90 backdrop-blur-xl px-4 py-3 md:px-6 md:py-4 rounded-[28px] border border-m3-outline/20 shadow-2xl m3-transition">
                  <div class="flex flex-col mr-2 md:mr-4 overflow-hidden max-w-[100px] sm:max-w-[300px]">
