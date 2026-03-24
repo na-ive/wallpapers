@@ -142,7 +142,7 @@
                     </button>
                 </div>
 
-                <div class="flex items-center gap-2 md:gap-4 shrink-0" x-show="!searchOpen">
+                <div class="flex items-center gap-1 md:gap-4 shrink-0" x-show="!searchOpen">
                     <!-- Sorting Group -->
                     <div class="flex items-center">
                         <div class="hidden md:flex gap-1 no-scrollbar overflow-x-auto">
@@ -187,9 +187,9 @@
                         </div>
                     </div>
 
-                    <!-- Surprise Me Button -->
+                    <!-- Surprise Me Button (No Background on Mobile) -->
                     <button @click="openRandom()" 
-                        class="pill-btn whitespace-nowrap flex items-center justify-center m3-transition h-9 w-9 md:w-auto md:px-4 md:py-2 bg-m3-primaryContainer text-m3-onPrimaryContainer rounded-full md:rounded-md shadow-sm hover:shadow-md active:scale-95"
+                        class="pill-btn whitespace-nowrap flex items-center justify-center m3-transition h-9 w-9 md:w-auto md:px-4 md:py-2 bg-transparent md:bg-m3-primaryContainer text-m3-onSurface md:text-m3-onPrimaryContainer rounded-full md:rounded-md hover:bg-m3-surfaceVariant/20 md:hover:bg-m3-primaryContainer active:scale-90"
                         title="Surprise Me!">
                         <i class="fa-solid fa-shuffle md:mr-2"></i>
                         <span class="hidden md:inline text-xs font-semibold">Surprise Me</span>
@@ -267,11 +267,11 @@
                      <span class="text-[10px] md:text-xs font-bold text-m3-onSurface truncate" x-text="currentWp?.filename"></span>
                  </div>
                  <div class="flex items-center gap-2">
-                     <a :href="currentWp?.filename" download class="bg-m3-primary text-m3-onPrimary px-4 py-2 md:px-6 md:py-2.5 rounded-2xl font-bold text-[10px] md:text-xs hover:scale-105 active:scale-95 m3-transition shadow-lg">
+                     <a :href="currentWp?.filename" download class="bg-m3-primary text-m3-onPrimary px-4 py-2 md:px-6 md:py-2.5 rounded-2xl font-bold text-[10px] md:text-xs hover:scale-105 active:scale-95 m3-transition shadow-lg text-center">
                         Download
                      </a>
                      <template x-if="currentWp?.wallhaven_id">
-                        <a :href="'https://wallhaven.cc/w/' + currentWp?.wallhaven_id" target="_blank" class="bg-m3-secondaryContainer text-m3-onSecondaryContainer px-4 py-2 md:px-6 md:py-2.5 rounded-2xl font-bold text-[10px] md:text-xs hover:scale-105 active:scale-95 m3-transition border border-m3-outline/10">
+                        <a :href="'https://wallhaven.cc/w/' + currentWp?.wallhaven_id" target="_blank" class="bg-m3-secondaryContainer text-m3-onSecondaryContainer px-4 py-2 md:px-6 md:py-2.5 rounded-2xl font-bold text-[10px] md:text-xs hover:scale-105 active:scale-95 m3-transition border border-m3-outline/10 text-center">
                             Wallhaven
                         </a>
                      </template>
