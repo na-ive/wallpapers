@@ -68,34 +68,15 @@
             border-radius: 10px;
         }
 
-        /* Pill Button Transition Fix: Using 4xl instead of full */
         .pill-btn {
             transition: all 0.5s cubic-bezier(0.2, 0, 0, 1) !important;
         }
         .pill-btn:hover, .pill-btn.active {
-            border-radius: 2rem !important; /* 4xl equivalent */
+            border-radius: 2rem !important; /* 4xl */
         }
 
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-
-        /* Improved Zoom Logic */
-        .zoom-container {
-            cursor: zoom-in;
-            transition: all 0.5s cubic-bezier(0.2, 0, 0, 1);
-        }
-        .zoom-container.zoomed {
-            cursor: zoom-out;
-            width: 150vw;
-            height: 150vh;
-            max-width: none;
-            max-height: none;
-        }
-        .zoom-container img {
-            width: 100%;
-            height: 100%;
-            object-contain: contain;
-        }
     </style>
     <script>
         tailwind.config = {
@@ -226,14 +207,8 @@
             </template>
 
             <template x-for="wp in filteredWallpapers()" :key="wp.filename">
-                <div class="m3-card group overflow-hidden flex flex-col m3-transition relative">
+                <div class="m3-card group overflow-hidden flex flex-col m3-transition relative border border-transparent hover:border-m3-outline/10">
                     <div class="aspect-video w-full relative overflow-hidden cursor-pointer bg-m3-surfaceVariant/10" @click="openLightbox(wp)">
-                        <!-- Color Swatch Tag -->
-                        <div class="absolute top-3 left-3 z-10 flex items-center gap-1.5 bg-black/30 backdrop-blur-md px-2 py-1 rounded-full border border-white/10" title="Dominant Color">
-                            <div class="w-2 h-2 rounded-full shadow-sm" :style="'background-color: ' + wp.color"></div>
-                            <span class="text-[8px] font-bold text-white/90 uppercase tracking-tighter" x-text="wp.color"></span>
-                        </div>
-                        
                         <img :src="wp.thumbnail" :alt="wp.filename" 
                             decoding="async" loading="lazy"
                             class="w-full h-full object-cover m3-transition group-hover:scale-105">
@@ -281,14 +256,8 @@
         @keydown.escape.window="closeLightbox()"
         x-cloak>
         
-        <div class="relative max-w-full w-full h-full flex flex-col items-center justify-center overflow-hidden" @click.self="closeLightbox()">
-            
-            <div class="relative overflow-auto custom-scrollbar max-w-[95vw] max-h-[85vh] rounded-2xl shadow-2xl flex items-center justify-center bg-black/20" x-data="{ zoomed: false }" @click.self="closeLightbox()">
-                <div class="zoom-container" :class="zoomed ? 'zoomed' : ''" @click="zoomed = !zoomed">
-                    <img :src="currentWp?.filename" 
-                        class="object-contain m3-transition shadow-2xl">
-                </div>
-            </div>
+        <div class="relative max-w-[95vw] w-full h-full flex flex-col items-center justify-center" @click.self="closeLightbox()">
+            <img :src="currentWp?.filename" class="max-w-full max-h-[85vh] object-contain rounded-2xl shadow-2xl border border-m3-surfaceVariant/20 m3-transition">
             
             <div class="mt-4 md:mt-6 flex items-center gap-2 bg-m3-surfaceContainerHigh/90 backdrop-blur-xl px-4 py-3 md:px-6 md:py-4 rounded-[28px] border border-m3-outline/20 shadow-2xl m3-transition">
                  <div class="flex flex-col mr-2 md:mr-4 overflow-hidden max-w-[100px] sm:max-w-[300px]">
