@@ -109,7 +109,6 @@
     <header class="sticky top-0 z-40 bg-m3-surface/80 backdrop-blur-md border-b border-m3-surfaceVariant/20 py-3 md:py-4">
         <div class="container mx-auto px-4 flex items-center justify-between h-10 md:h-12">
             
-            <!-- Left: Title/Logo -->
             <div class="flex items-center gap-2 md:gap-3 shrink-0" x-show="!searchOpen">
                 <i class="fa-solid fa-images text-m3-onSurface text-lg md:text-xl"></i>
                 <h1 class="text-base md:text-xl font-semibold text-m3-onSurface whitespace-nowrap">
@@ -118,19 +117,15 @@
                 </h1>
             </div>
 
-            <!-- Right: Search & Sort Tools -->
             <div class="flex items-center gap-2 md:gap-4 flex-grow justify-end" :class="searchOpen ? 'w-full' : ''">
                 
-                <!-- Search Bar (Expandable on Mobile, Always on Desktop) -->
                 <div class="relative flex items-center transition-all duration-300" :class="searchOpen ? 'w-full' : 'w-auto'">
-                    <!-- Desktop Search (Static) -->
                     <div class="hidden md:block relative w-64">
                         <input type="text" x-model="search" placeholder="Search..." 
                             class="w-full bg-m3-surfaceContainerHigh text-m3-onSurface border-none rounded-xl py-2 px-10 focus:ring-2 focus:ring-m3-primary transition-all text-sm">
                         <i class="fa fa-search absolute left-3 top-1/2 -translate-y-1/2 text-m3-onSurfaceVariant/70 text-xs"></i>
                     </div>
 
-                    <!-- Mobile Search (Expandable) -->
                     <div class="md:hidden flex items-center gap-2 w-full" x-show="searchOpen" x-cloak x-transition>
                         <button @click="searchOpen = false; search = ''" class="p-2 text-m3-onSurfaceVariant">
                             <i class="fa fa-arrow-left"></i>
@@ -143,9 +138,7 @@
                     </button>
                 </div>
 
-                <!-- Sort Button (Dropdown/Modal Style for Mobile, Pills for Desktop) -->
                 <div class="flex items-center gap-1 shrink-0" x-show="!searchOpen">
-                    <!-- Desktop Sort (Pills) -->
                     <div class="hidden md:flex gap-1 no-scrollbar overflow-x-auto">
                         <template x-for="(option, index) in sortOptions" :key="option.value">
                             <button 
@@ -163,7 +156,6 @@
                         </template>
                     </div>
 
-                    <!-- Mobile Sort (Dropdown Menu) -->
                     <div class="md:hidden relative" x-data="{ open: false }">
                         <button @click="open = !open" class="p-2 text-m3-onSurface hover:bg-m3-surfaceVariant/20 rounded-full transition-colors">
                             <i class="fa-solid fa-arrow-down-wide-short"></i>
@@ -305,8 +297,9 @@
                 },
 
                 cleanName(name) {
-                    let base = name.split('.')[0];
-                    return base.length > 20 ? base.substring(0, 18) + '...' : base;
+                    // Remove only the final file extension
+                    let base = name.replace(/\.[^/.]+$/, "");
+                    return base.length > 30 ? base.substring(0, 28) + '...' : base;
                 },
 
                 openLightbox(wp) {
