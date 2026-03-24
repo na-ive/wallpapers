@@ -217,13 +217,13 @@
             </template>
         </div>
 
-        <!-- Footer (End of Collection) -->
-        <div x-show="!loading && filteredWallpapers().length > 0" class="mt-20 mb-12 flex flex-col items-center gap-4 py-10 border-t border-m3-surfaceVariant/10" x-cloak>
-            <p class="text-m3-onSurfaceVariant/50 text-xs font-medium uppercase tracking-widest italic">You've reached the end of the collection</p>
+        <!-- Footer (Simple & Human) -->
+        <div x-show="!loading && filteredWallpapers().length > 0" class="mt-12 mb-8 flex flex-col items-center gap-2 py-4" x-cloak>
+            <p class="text-m3-onSurfaceVariant/40 text-sm font-medium italic">That's all for now! More wallpapers are coming soon.</p>
             <a href="https://github.com/na-ive/wallpapers" target="_blank" 
-                class="flex items-center gap-2 px-6 py-2.5 rounded-full border border-m3-outline/20 text-m3-onSurfaceVariant hover:bg-m3-primary/10 hover:border-m3-primary/30 hover:text-m3-primary transition-all text-xs font-bold">
+                class="flex items-center gap-2 px-4 py-2 text-m3-onSurfaceVariant/60 hover:text-m3-primary transition-colors text-xs font-bold">
                 <i class="fa-brands fa-github text-base"></i>
-                <span>Give a Star</span>
+                <span>Give this repo a star</span>
             </a>
         </div>
     </main>
