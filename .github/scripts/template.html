@@ -115,6 +115,10 @@
                     <span class="md:hidden">NAWC</span>
                     <span class="hidden md:inline">NA-ive Wallpaper Collection</span>
                 </h1>
+                <!-- Surprise Me Button (Always show next to title on Desktop, show in tools for mobile) -->
+                <button @click="openRandom()" class="ml-2 p-2 text-m3-onSurface/80 hover:text-m3-primary transition-colors hidden md:block" title="Surprise Me!">
+                    <i class="fa-solid fa-shuffle"></i>
+                </button>
             </div>
 
             <div class="flex items-center gap-2 md:gap-4 flex-grow justify-end" :class="searchOpen ? 'w-full' : ''">
@@ -139,6 +143,11 @@
                 </div>
 
                 <div class="flex items-center gap-1 shrink-0" x-show="!searchOpen">
+                    <!-- Surprise Me Mobile -->
+                    <button @click="openRandom()" class="md:hidden p-2 text-m3-onSurface transition-colors hover:bg-m3-surfaceVariant/20 rounded-full">
+                        <i class="fa-solid fa-shuffle"></i>
+                    </button>
+
                     <div class="hidden md:flex gap-1 no-scrollbar overflow-x-auto">
                         <template x-for="(option, index) in sortOptions" :key="option.value">
                             <button 
@@ -217,9 +226,9 @@
             </template>
         </div>
 
-        <!-- Footer (Simple & Human) -->
+        <!-- Footer -->
         <div x-show="!loading && filteredWallpapers().length > 0" class="mt-12 mb-8 flex flex-col items-center gap-2 py-4" x-cloak>
-            <p class="text-m3-onSurfaceVariant/40 text-sm font-medium italic">That's all for now! More wallpapers are coming soon.</p>
+            <p class="text-m3-onSurfaceVariant/40 text-sm font-medium italic text-center">That's all for now! More wallpapers are coming soon.</p>
             <a href="https://github.com/na-ive/wallpapers" target="_blank" 
                 class="flex items-center gap-2 px-4 py-2 text-m3-onSurfaceVariant/60 hover:text-m3-primary transition-colors text-xs font-bold">
                 <i class="fa-brands fa-github text-base"></i>
@@ -315,6 +324,13 @@
                     this.currentWp = wp;
                     this.lightboxOpen = true;
                     document.body.style.overflow = 'hidden';
+                },
+
+                openRandom() {
+                    if (this.wallpapers.length > 0) {
+                        const randomIndex = Math.floor(Math.random() * this.wallpapers.length);
+                        this.openLightbox(this.wallpapers[randomIndex]);
+                    }
                 },
 
                 closeLightbox() {

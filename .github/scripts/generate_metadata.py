@@ -17,7 +17,6 @@ def get_wallhaven_id(filename):
 
 def get_git_mtime(filename):
     try:
-        # Get the last commit date of the file in ISO 8601 format
         result = subprocess.run(
             ['git', 'log', '-1', '--format=%cI', filename],
             stdout=subprocess.PIPE,
@@ -29,8 +28,6 @@ def get_git_mtime(filename):
             return result.stdout.strip()
     except Exception as e:
         print(f"Error getting git mtime for {filename}: {e}")
-    
-    # Fallback to filesystem mtime if git fails
     return datetime.datetime.fromtimestamp(os.stat(filename).st_mtime).isoformat()
 
 def generate_metadata():
@@ -43,17 +40,18 @@ def generate_metadata():
     for filename in files:
         ext = os.path.splitext(filename)[1].lower()
         if ext in IMAGE_EXTENSIONS:
-            # Use Git commit time for accurate sorting
             mtime = get_git_mtime(filename)
             
-            thumb_name = f"thumb_{filename}"
+            # Use .webp for even better performance in thumbnails
+            thumb_name = f"thumb_{os.path.splitext(filename)[0]}.webp"
             thumb_path = os.path.join(THUMB_DIR, thumb_name)
             
             try:
                 if not os.path.exists(thumb_path):
                     with Image.open(filename) as img:
                         img.thumbnail(THUMB_SIZE)
-                        img.save(thumb_path, optimize=True, quality=85)
+                        # Save as WebP for list view optimization
+                        img.save(thumb_path, 'WEBP', optimize=True, quality=85)
             except Exception as e:
                 print(f"Error generating thumbnail for {filename}: {e}")
                 thumb_path = filename
@@ -66,7 +64,6 @@ def generate_metadata():
             }
             wallpapers.append(wallpaper)
             
-    # Sort by Git commit date
     wallpapers.sort(key=lambda x: x['mtime'], reverse=True)
     
     with open('wallpapers.json', 'w') as f:
