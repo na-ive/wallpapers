@@ -10,6 +10,7 @@ IMAGE_EXTENSIONS = {'.jpg', '.jpeg', '.png', '.gif', '.webp'}
 THUMB_SIZE = (640, 360)
 THUMB_DIR = 'thumbnails'
 METADATA_FILE = 'wallpapers.json'
+METADATA_VERSION = 2 # Increment this to force re-processing
 
 def get_wallhaven_id(filename):
     match = re.search(r'wallhaven-([a-z0-9]+)', filename, re.IGNORECASE)
@@ -44,20 +45,23 @@ def get_dominant_color(img):
 
 def get_color_groups(img):
     """Samples the image and returns a unique list of human-readable color groups with a frequency threshold."""
-    # Resize to 4x4 to get a small sample of colors across the image
     img = img.convert('RGB')
-    small_img = img.resize((4, 4), resample=Image.Resampling.BILINEAR)
+    # Use 8x8 grid for better statistical accuracy (64 samples)
+    grid_size = 8
+    small_img = img.resize((grid_size, grid_size), resample=Image.Resampling.BILINEAR)
     
     color_counts = {}
-    for x in range(4):
-        for y in range(4):
+    for x in range(grid_size):
+        for y in range(grid_size):
             r, g, b = small_img.getpixel((x, y))
             r_norm, g_norm, b_norm = r/255.0, g/255.0, b/255.0
             h, s, v = colorsys.rgb_to_hsv(r_norm, g_norm, b_norm)
             h_deg = h * 360
             
-            # Skip neutrals (White, Black, Gray)
-            if v < 0.2 or s < 0.2: continue
+            # MUCH STRICTER THRESHOLDS
+            # s < 0.35 filters out 'cool grays' and 'warm whites'
+            # v < 0.25 filters out colors that are too dark to be perceived as that color
+            if s < 0.35 or v < 0.25: continue
             
             group = None
             if h_deg < 15 or h_deg >= 330: group = "Red"
@@ -70,13 +74,15 @@ def get_color_groups(img):
             if group:
                 color_counts[group] = color_counts.get(group, 0) + 1
     
-    # Threshold: Must appear at least 2 times (out of 16) to be considered significant (~12.5% area)
-    significant_groups = [g for g, count in color_counts.items() if count >= 2]
+    # Threshold: Must appear at least 10 times out of 64 to be significant (~15.6% area)
+    significant_groups = [g for g, count in color_counts.items() if count >= 10]
     
-    # Fallback: If nothing is significant enough, take the top 1 if available
+    # Fallback: If nothing is significant enough, take the top 1 only if it's reasonably colored
     if not significant_groups and color_counts:
         top_color = max(color_counts, key=color_counts.get)
-        significant_groups = [top_color]
+        # Even fallback must have at least 5 pixels to be considered
+        if color_counts[top_color] >= 5:
+            significant_groups = [top_color]
         
     return sorted(significant_groups)
 
@@ -106,10 +112,9 @@ def generate_metadata():
         thumb_name = f"thumb_{os.path.splitext(filename)[0]}.webp"
         thumb_path = os.path.join(THUMB_DIR, thumb_name)
         
-        # Check if we can reuse metadata AND if it has required fields
+        # Check if we can reuse metadata AND if version matches
         if filename in old_metadata and os.path.exists(thumb_path) and \
-           "color_groups" in old_metadata[filename] and \
-           "resolution" in old_metadata[filename]:
+           old_metadata[filename].get("version") == METADATA_VERSION:
             wallpapers.append(old_metadata[filename])
             skipped_count += 1
             continue
@@ -143,7 +148,8 @@ def generate_metadata():
             "resolution": resolution,
             "color": dominant_color,
             "color_groups": color_groups,
-            "wallhaven_id": get_wallhaven_id(filename)
+            "wallhaven_id": get_wallhaven_id(filename),
+            "version": METADATA_VERSION
         }
         wallpapers.append(wallpaper)
             
