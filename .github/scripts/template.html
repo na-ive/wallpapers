@@ -78,7 +78,24 @@
             <div class="flex items-center gap-2 md:gap-4 flex-grow justify-end" :class="searchOpen ? 'w-full' : ''">
                 
                 <div class="relative flex items-center m3-transition" :class="searchOpen ? 'w-full' : 'w-auto'">
-                    <div class="hidden md:block relative w-64">
+                    
+                    <!-- Color Filter (Desktop) -->
+                    <div class="hidden lg:flex items-center gap-1 mr-4 no-scrollbar overflow-x-auto max-w-xs xl:max-w-md">
+                        <template x-for="color in colorGroups" :key="color">
+                            <button @click="selectedColor = (selectedColor === color ? '' : color)"
+                                class="cursor-pointer w-6 h-6 rounded-full border-2 m3-transition hover:scale-110 active:scale-90 shrink-0"
+                                :class="selectedColor === color ? 'border-m3-primary scale-110 shadow-lg' : 'border-transparent opacity-60 hover:opacity-100'"
+                                :style="'background-color: ' + getColorHex(color)"
+                                :title="color">
+                            </button>
+                        </template>
+                        <button x-show="selectedColor" @click="selectedColor = ''" 
+                            class="cursor-pointer ml-1 text-[10px] font-bold text-m3-primary hover:underline whitespace-nowrap">
+                            Clear
+                        </button>
+                    </div>
+
+                    <div class="hidden md:block relative w-48 lg:w-64">
                         <input type="text" x-model="search" placeholder="Search..." 
                             class="w-full bg-m3-surfaceContainerHigh text-m3-onSurface border-none rounded-xl py-2 px-10 focus:ring-2 focus:ring-m3-primary m3-transition text-sm">
                         <i class="fa fa-search absolute left-3 top-1/2 -translate-y-1/2 text-m3-onSurfaceVariant/70 text-xs"></i>
@@ -167,9 +184,14 @@
                         <img :src="wp.thumbnail" :alt="wp.filename" 
                             decoding="async" loading="lazy"
                             class="w-full h-full object-cover m3-transition group-hover:scale-105">
+                        <!-- Color Tag Overlay -->
+                        <div class="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-black/40 backdrop-blur-md text-[8px] font-bold text-white opacity-0 group-hover:opacity-100 m3-transition pointer-events-none" x-text="wp.color_group"></div>
                     </div>
                     <div class="p-3 md:p-4 flex items-center justify-between gap-2">
-                        <span class="text-[10px] md:text-xs font-medium text-m3-onSurface truncate flex-grow" x-text="cleanName(wp.filename)"></span>
+                        <div class="flex items-center gap-2 overflow-hidden flex-grow">
+                            <div class="w-2 h-2 rounded-full shrink-0" :style="'background-color: ' + wp.color" :title="wp.color"></div>
+                            <span class="text-[10px] md:text-xs font-medium text-m3-onSurface truncate" x-text="cleanName(wp.filename)"></span>
+                        </div>
                         <div class="flex gap-1 shrink-0">
                             <template x-if="wp.wallhaven_id">
                                 <a :href="'https://wallhaven.cc/w/' + wp.wallhaven_id" target="_blank" 
@@ -238,10 +260,12 @@
                 wallpapers: [],
                 search: '',
                 sortOrder: 'newest',
+                selectedColor: '',
                 loading: true,
                 lightboxOpen: false,
                 searchOpen: false,
                 currentWp: null,
+                colorGroups: ['Red', 'Orange', 'Yellow', 'Green', 'Cyan', 'Blue', 'Purple', 'Pink', 'Brown', 'White', 'Gray', 'Black'],
                 sortOptions: [
                     { label: 'Newest', value: 'newest' },
                     { label: 'Oldest', value: 'oldest' },
@@ -258,10 +282,22 @@
                         });
                 },
 
+                getColorHex(group) {
+                    const colors = {
+                        'Red': '#f44336', 'Orange': '#ff9800', 'Yellow': '#ffeb3b', 
+                        'Green': '#4caf50', 'Cyan': '#00bcd4', 'Blue': '#2196f3', 
+                        'Purple': '#9c27b0', 'Pink': '#e91e63', 'Brown': '#795548', 
+                        'White': '#ffffff', 'Gray': '#9e9e9e', 'Black': '#212121'
+                    };
+                    return colors[group] || '#ccc';
+                },
+
                 filteredWallpapers() {
-                    let result = this.wallpapers.filter(wp => 
-                        wp.filename.toLowerCase().includes(this.search.toLowerCase())
-                    );
+                    let result = this.wallpapers.filter(wp => {
+                        const matchesSearch = wp.filename.toLowerCase().includes(this.search.toLowerCase());
+                        const matchesColor = this.selectedColor === '' || wp.color_group === this.selectedColor;
+                        return matchesSearch && matchesColor;
+                    });
 
                     if (this.sortOrder === 'newest') {
                         result.sort((a, b) => new Date(b.mtime) - new Date(a.mtime));

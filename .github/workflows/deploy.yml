@@ -23,6 +23,16 @@ jobs:
         with:
           python-version: '3.x'
 
+      - name: Cache Metadata and Thumbnails
+        uses: actions/cache@v3
+        with:
+          path: |
+            thumbnails
+            wallpapers.json
+          key: ${{ runner.os }}-wallpaper-cache-${{ github.run_id }}
+          restore-keys: |
+            ${{ runner.os }}-wallpaper-cache-
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
