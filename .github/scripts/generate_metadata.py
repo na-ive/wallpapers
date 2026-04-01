@@ -43,12 +43,12 @@ def get_dominant_color(img):
         return '#47464f' # Fallback
 
 def get_color_groups(img):
-    """Samples the image and returns a unique list of human-readable color groups."""
+    """Samples the image and returns a unique list of human-readable color groups with a frequency threshold."""
     # Resize to 4x4 to get a small sample of colors across the image
     img = img.convert('RGB')
     small_img = img.resize((4, 4), resample=Image.Resampling.BILINEAR)
     
-    groups = set()
+    color_counts = {}
     for x in range(4):
         for y in range(4):
             r, g, b = small_img.getpixel((x, y))
@@ -57,18 +57,28 @@ def get_color_groups(img):
             h_deg = h * 360
             
             # Skip neutrals (White, Black, Gray)
-            if v < 0.2: continue # Too dark
-            if s < 0.2: continue # Too desaturated
+            if v < 0.2 or s < 0.2: continue
             
-            # Categorize by Hue into 6 main colors
-            if h_deg < 15 or h_deg >= 330: groups.add("Red")
-            elif h_deg < 45: groups.add("Orange")
-            elif h_deg < 75: groups.add("Yellow")
-            elif h_deg < 165: groups.add("Green")
-            elif h_deg < 265: groups.add("Blue")
-            elif h_deg < 330: groups.add("Purple")
+            group = None
+            if h_deg < 15 or h_deg >= 330: group = "Red"
+            elif h_deg < 45: group = "Orange"
+            elif h_deg < 75: group = "Yellow"
+            elif h_deg < 165: group = "Green"
+            elif h_deg < 265: group = "Blue"
+            elif h_deg < 330: group = "Purple"
             
-    return sorted(list(groups))
+            if group:
+                color_counts[group] = color_counts.get(group, 0) + 1
+    
+    # Threshold: Must appear at least 2 times (out of 16) to be considered significant (~12.5% area)
+    significant_groups = [g for g, count in color_counts.items() if count >= 2]
+    
+    # Fallback: If nothing is significant enough, take the top 1 if available
+    if not significant_groups and color_counts:
+        top_color = max(color_counts, key=color_counts.get)
+        significant_groups = [top_color]
+        
+    return sorted(significant_groups)
 
 def generate_metadata():
     if not os.path.exists(THUMB_DIR):
