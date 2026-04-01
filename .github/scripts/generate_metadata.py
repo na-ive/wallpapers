@@ -10,7 +10,7 @@ IMAGE_EXTENSIONS = {'.jpg', '.jpeg', '.png', '.gif', '.webp'}
 THUMB_SIZE = (640, 360)
 THUMB_DIR = 'thumbnails'
 METADATA_FILE = 'wallpapers.json'
-METADATA_VERSION = 3 # Increment this to force re-processing
+METADATA_VERSION = 4 # Increment this to force re-processing
 
 def get_wallhaven_id(filename):
     match = re.search(r'wallhaven-([a-z0-9]+)', filename, re.IGNORECASE)
@@ -113,9 +113,10 @@ def generate_metadata():
         thumb_name = f"thumb_{os.path.splitext(filename)[0]}.webp"
         thumb_path = os.path.join(THUMB_DIR, thumb_name)
         
-        # Check if we can reuse metadata AND if version matches
+        # Check if we can reuse metadata AND if version matches AND it's not Unknown
         if filename in old_metadata and os.path.exists(thumb_path) and \
-           old_metadata[filename].get("version") == METADATA_VERSION:
+           old_metadata[filename].get("version") == METADATA_VERSION and \
+           old_metadata[filename].get("resolution") != "Unknown":
             wallpapers.append(old_metadata[filename])
             skipped_count += 1
             continue
@@ -128,6 +129,8 @@ def generate_metadata():
         dominant_color = '#47464f'
         color_groups = []
         resolution = "Unknown"
+        
+        # Try processing with PIL first
         try:
             with Image.open(filename) as img:
                 width, height = img.size
@@ -139,8 +142,51 @@ def generate_metadata():
                     thumb_img.thumbnail(THUMB_SIZE)
                     thumb_img.save(thumb_path, 'WEBP', optimize=True, quality=85)
         except Exception as e:
-            print(f"Error processing {filename}: {e}")
-            thumb_path = filename
+            print(f"PIL error for {filename}: {e}. Trying ImageMagick fallback...")
+            
+            # Fallback for Resolution using identify
+            try:
+                res_result = subprocess.run(
+                    ['identify', '-format', '%wx%h', filename],
+                    stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=True
+                )
+                if res_result.stdout.strip():
+                    resolution = res_result.stdout.strip()
+            except Exception as res_err:
+                print(f"Identify error for {filename}: {res_err}")
+
+            # Fallback for Thumbnail using magick or convert
+            if not os.path.exists(thumb_path):
+                try:
+                    # Try 'magick' first (v7), then 'convert' (v6)
+                    cmd = ['magick', filename, '-thumbnail', f'{THUMB_SIZE[0]}x{THUMB_SIZE[1]}', thumb_path]
+                    try:
+                        subprocess.run(cmd, check=True, stderr=subprocess.PIPE)
+                    except (subprocess.CalledProcessError, FileNotFoundError):
+                        cmd[0] = 'convert'
+                        subprocess.run(cmd, check=True)
+                except Exception as thumb_err:
+                    print(f"Magick/Convert thumb error for {filename}: {thumb_err}")
+                    thumb_path = filename # Fallback to original if thumbnail creation fails
+
+            # Try to get colors using a "cleaned" temp image if PIL failed initially
+            temp_clean = f"temp_clean_{filename}.png"
+            try:
+                # Use magick or convert to strip profiles
+                cmd = ['magick', filename, '-strip', temp_clean]
+                try:
+                    subprocess.run(cmd, check=True, stderr=subprocess.PIPE)
+                except (subprocess.CalledProcessError, FileNotFoundError):
+                    cmd[0] = 'convert'
+                    subprocess.run(cmd, check=True)
+                
+                with Image.open(temp_clean) as clean_img:
+                    dominant_color = get_dominant_color(clean_img)
+                    color_groups = get_color_groups(clean_img)
+                os.remove(temp_clean)
+            except Exception as color_err:
+                print(f"Color extraction fallback error for {filename}: {color_err}")
+                if os.path.exists(temp_clean): os.remove(temp_clean)
         
         wallpaper = {
             "filename": filename,
