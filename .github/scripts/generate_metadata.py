@@ -104,8 +104,10 @@ def generate_metadata():
         thumb_name = f"thumb_{os.path.splitext(filename)[0]}.webp"
         thumb_path = os.path.join(THUMB_DIR, thumb_name)
         
-        # Check if we can reuse metadata AND if it has the new color_groups (plural)
-        if filename in old_metadata and os.path.exists(thumb_path) and "color_groups" in old_metadata[filename]:
+        # Check if we can reuse metadata AND if it has required fields
+        if filename in old_metadata and os.path.exists(thumb_path) and \
+           "color_groups" in old_metadata[filename] and \
+           "resolution" in old_metadata[filename]:
             wallpapers.append(old_metadata[filename])
             skipped_count += 1
             continue
