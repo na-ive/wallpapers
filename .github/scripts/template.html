@@ -4,6 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NA-ive Wallpaper Collection</title>
+
+    <!-- Meta Tags -->
+    <meta name="description" content="A curated collection of high-quality wallpapers for your desktop and mobile devices.">
+    <meta name="theme-color" content="#1b1b1f">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://na-ive.github.io/wallpapers/">
+    <meta property="og:title" content="NA-ive Wallpaper Collection">
+    <meta property="og:description" content="A curated collection of high-quality wallpapers for your desktop and mobile devices.">
+    <meta property="og:image" content="https://na-ive.github.io/wallpapers/random_wallpaper.png">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:title" content="NA-ive Wallpaper Collection">
+    <meta property="twitter:description" content="A curated collection of high-quality wallpapers for your desktop and mobile devices.">
+
     <link rel="stylesheet" href="style.css">
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -67,9 +84,9 @@
     <header class="sticky top-0 z-40 bg-m3-surface/80 backdrop-blur-md border-b border-m3-surfaceVariant/20 py-3 md:py-4">
         <div class="container mx-auto px-4 flex items-center justify-between h-10 md:h-12">
             
-            <div class="flex items-center gap-2 md:gap-3 shrink-0" x-show="!searchOpen">
-                <i class="fa-solid fa-images text-m3-onSurface text-lg md:text-xl"></i>
-                <h1 class="text-base md:text-xl font-semibold text-m3-onSurface whitespace-nowrap">
+            <div class="flex items-center gap-2 md:gap-3 shrink-0 cursor-pointer group" x-show="!searchOpen" @click="resetGallery()">
+                <i class="fa-solid fa-images text-m3-onSurface text-lg md:text-xl group-hover:text-m3-primary m3-transition"></i>
+                <h1 class="text-base md:text-xl font-semibold text-m3-onSurface whitespace-nowrap group-hover:text-m3-primary m3-transition">
                     <span class="md:hidden">NAWC</span>
                     <span class="hidden md:inline">NA-ive Wallpaper Collection</span>
                 </h1>
@@ -364,6 +381,14 @@
                 closeLightbox() {
                     this.lightboxOpen = false;
                     document.body.style.overflow = 'auto';
+                },
+
+                resetGallery() {
+                    this.search = '';
+                    this.selectedColor = '';
+                    this.sortOrder = 'newest';
+                    this.searchOpen = false;
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
                 }
             }
         }

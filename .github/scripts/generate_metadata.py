@@ -10,7 +10,7 @@ IMAGE_EXTENSIONS = {'.jpg', '.jpeg', '.png', '.gif', '.webp'}
 THUMB_SIZE = (640, 360)
 THUMB_DIR = 'thumbnails'
 METADATA_FILE = 'wallpapers.json'
-METADATA_VERSION = 2 # Increment this to force re-processing
+METADATA_VERSION = 3 # Increment this to force re-processing
 
 def get_wallhaven_id(filename):
     match = re.search(r'wallhaven-([a-z0-9]+)', filename, re.IGNORECASE)
@@ -58,30 +58,31 @@ def get_color_groups(img):
             h, s, v = colorsys.rgb_to_hsv(r_norm, g_norm, b_norm)
             h_deg = h * 360
             
-            # MUCH STRICTER THRESHOLDS
-            # s < 0.35 filters out 'cool grays' and 'warm whites'
-            # v < 0.25 filters out colors that are too dark to be perceived as that color
-            if s < 0.35 or v < 0.25: continue
+            # SMART THRESHOLDS
+            # Colors with very low saturation (s < 0.25) look gray/white
+            # Colors with very low value (v < 0.20) look black
+            if s < 0.25 or v < 0.20: continue
             
             group = None
-            if h_deg < 15 or h_deg >= 330: group = "Red"
+            # Precision-calibrated Hue ranges for human perception
+            if h_deg < 10 or h_deg >= 345: group = "Red"
             elif h_deg < 45: group = "Orange"
-            elif h_deg < 75: group = "Yellow"
-            elif h_deg < 165: group = "Green"
-            elif h_deg < 265: group = "Blue"
-            elif h_deg < 330: group = "Purple"
+            elif h_deg < 70: group = "Yellow"
+            elif h_deg < 160: group = "Green"
+            elif h_deg < 250: group = "Blue"   # Ends at 250 to catch Indigo in Purple
+            elif h_deg < 345: group = "Purple" # Starts at 250, covers Indigo/Pink, ends at 345
             
             if group:
                 color_counts[group] = color_counts.get(group, 0) + 1
     
-    # Threshold: Must appear at least 10 times out of 64 to be significant (~15.6% area)
-    significant_groups = [g for g, count in color_counts.items() if count >= 10]
+    # Significant threshold (12/64 = ~19% of image area)
+    significant_groups = [g for g, count in color_counts.items() if count >= 12]
     
-    # Fallback: If nothing is significant enough, take the top 1 only if it's reasonably colored
+    # Fallback: If nothing is significant enough, take the top 1 only if it's clear enough
     if not significant_groups and color_counts:
         top_color = max(color_counts, key=color_counts.get)
-        # Even fallback must have at least 5 pixels to be considered
-        if color_counts[top_color] >= 5:
+        # Fallback must have at least 6 pixels (~9% area)
+        if color_counts[top_color] >= 6:
             significant_groups = [top_color]
         
     return sorted(significant_groups)
