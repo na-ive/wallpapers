@@ -57,24 +57,16 @@ def get_color_groups(img):
             h_deg = h * 360
             
             # Skip neutrals (White, Black, Gray)
-            if v < 0.2: continue # Too dark (Black)
-            if s < 0.2: # Low saturation
-                if v > 0.8: continue # Too bright (White)
-                continue # Gray
+            if v < 0.2: continue # Too dark
+            if s < 0.2: continue # Too desaturated
             
-            # Brown (Dark Orange/Red)
-            if v < 0.5 and (h_deg < 40 or h_deg > 330): 
-                groups.add("Brown")
-                continue
-                
-            # Categorize by Hue
-            if h_deg < 20 or h_deg >= 335: groups.add("Red")
+            # Categorize by Hue into 6 main colors
+            if h_deg < 15 or h_deg >= 330: groups.add("Red")
             elif h_deg < 45: groups.add("Orange")
-            elif h_deg < 70: groups.add("Yellow")
+            elif h_deg < 75: groups.add("Yellow")
             elif h_deg < 165: groups.add("Green")
-            elif h_deg < 265: groups.add("Blue") # Combined Cyan and Blue
-            elif h_deg < 305: groups.add("Purple")
-            elif h_deg < 335: groups.add("Pink")
+            elif h_deg < 265: groups.add("Blue")
+            elif h_deg < 330: groups.add("Purple")
             
     return sorted(list(groups))
 

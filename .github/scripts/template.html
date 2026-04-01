@@ -218,15 +218,8 @@
                             decoding="async" loading="lazy"
                             class="w-full h-full object-cover m3-transition group-hover:scale-105">
                         
-                        <!-- Resolution Pill (Top Left) -->
-                        <div class="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-black/40 backdrop-blur-md text-[8px] font-bold text-white opacity-0 group-hover:opacity-100 m3-transition pointer-events-none" x-text="wp.resolution"></div>
-
-                        <!-- Color Tag Overlay (Multiple - Top Right) -->
-                        <div class="absolute top-2 right-2 flex flex-wrap justify-end gap-1 opacity-0 group-hover:opacity-100 m3-transition pointer-events-none">
-                            <template x-for="cg in wp.color_groups" :key="cg">
-                                <span class="px-2 py-0.5 rounded-full bg-black/40 backdrop-blur-md text-[8px] font-bold text-white uppercase" x-text="cg"></span>
-                            </template>
-                        </div>
+                        <!-- Resolution Pill (Top Right) -->
+                        <div class="absolute top-2 right-2 px-3 py-1 rounded-full bg-black/50 backdrop-blur-md text-[10px] font-bold text-white opacity-100 md:opacity-0 md:group-hover:opacity-100 m3-transition pointer-events-none tracking-wider" x-text="wp.resolution"></div>
                     </div>
                     <div class="p-3 md:p-4 flex items-center justify-between gap-2">
                         <div class="flex items-center gap-2 overflow-hidden flex-grow">
@@ -305,7 +298,7 @@
                 lightboxOpen: false,
                 searchOpen: false,
                 currentWp: null,
-                colorGroups: ['Red', 'Orange', 'Yellow', 'Green', 'Blue', 'Purple', 'Pink', 'Brown'],
+                colorGroups: ['Red', 'Orange', 'Yellow', 'Green', 'Blue', 'Purple'],
                 sortOptions: [
                     { label: 'Newest', value: 'newest' },
                     { label: 'Oldest', value: 'oldest' },
@@ -325,8 +318,7 @@
                 getColorHex(group) {
                     const colors = {
                         'Red': '#f44336', 'Orange': '#ff9800', 'Yellow': '#ffeb3b', 
-                        'Green': '#4caf50', 'Blue': '#2196f3', 
-                        'Purple': '#9c27b0', 'Pink': '#e91e63', 'Brown': '#795548'
+                        'Green': '#4caf50', 'Blue': '#2196f3', 'Purple': '#9c27b0'
                     };
                     return colors[group] || '#ccc';
                 },
