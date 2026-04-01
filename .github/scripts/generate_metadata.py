@@ -117,8 +117,11 @@ def generate_metadata():
         
         dominant_color = '#47464f'
         color_groups = []
+        resolution = "Unknown"
         try:
             with Image.open(filename) as img:
+                width, height = img.size
+                resolution = f"{width}x{height}"
                 dominant_color = get_dominant_color(img)
                 color_groups = get_color_groups(img)
                 if not os.path.exists(thumb_path):
@@ -133,6 +136,7 @@ def generate_metadata():
             "filename": filename,
             "thumbnail": thumb_path,
             "mtime": mtime,
+            "resolution": resolution,
             "color": dominant_color,
             "color_groups": color_groups,
             "wallhaven_id": get_wallhaven_id(filename)

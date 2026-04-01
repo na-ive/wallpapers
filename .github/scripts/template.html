@@ -80,7 +80,7 @@
                 <div class="relative flex items-center m3-transition" :class="searchOpen ? 'w-full' : 'w-auto'">
                     
                     <!-- Color Filter (Desktop) -->
-                    <div class="hidden lg:flex items-center gap-1 mr-4 no-scrollbar overflow-x-auto max-w-xs xl:max-w-md py-2">
+                    <div class="hidden lg:flex items-center gap-1 mr-4 no-scrollbar overflow-x-auto max-w-xs xl:max-w-md py-2 px-2">
                         <template x-for="color in colorGroups" :key="color">
                             <button @click="selectedColor = (selectedColor === color ? '' : color)"
                                 class="cursor-pointer w-6 h-6 rounded-full border-2 m3-transition hover:scale-110 active:scale-90 shrink-0"
@@ -133,7 +133,7 @@
                         </div>
 
                         <div class="md:hidden relative" x-data="{ open: false }">
-                            <button @click="open = !open" class="cursor-pointer p-2 text-m3-onSurface m3-transition hover:bg-m3-surfaceVariant/20 rounded-full" :class="selectedColor ? 'text-m3-primary bg-m3-primary/10' : ''">
+                            <button @click="open = !open" class="cursor-pointer p-2 text-m3-onSurface m3-transition hover:bg-m3-surfaceVariant/20 rounded-full" :class="selectedColor ? 'text-m3-primary' : ''">
                                 <i class="fa-solid fa-palette"></i>
                             </button>
                             <div x-show="open" @click.away="open = false" x-cloak
@@ -217,7 +217,11 @@
                         <img :src="wp.thumbnail" :alt="wp.filename" 
                             decoding="async" loading="lazy"
                             class="w-full h-full object-cover m3-transition group-hover:scale-105">
-                        <!-- Color Tag Overlay (Multiple) -->
+                        
+                        <!-- Resolution Pill (Top Left) -->
+                        <div class="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-black/40 backdrop-blur-md text-[8px] font-bold text-white opacity-0 group-hover:opacity-100 m3-transition pointer-events-none" x-text="wp.resolution"></div>
+
+                        <!-- Color Tag Overlay (Multiple - Top Right) -->
                         <div class="absolute top-2 right-2 flex flex-wrap justify-end gap-1 opacity-0 group-hover:opacity-100 m3-transition pointer-events-none">
                             <template x-for="cg in wp.color_groups" :key="cg">
                                 <span class="px-2 py-0.5 rounded-full bg-black/40 backdrop-blur-md text-[8px] font-bold text-white uppercase" x-text="cg"></span>
@@ -226,7 +230,6 @@
                     </div>
                     <div class="p-3 md:p-4 flex items-center justify-between gap-2">
                         <div class="flex items-center gap-2 overflow-hidden flex-grow">
-                            <div class="w-2 h-2 rounded-full shrink-0" :style="'background-color: ' + wp.color" :title="wp.color"></div>
                             <span class="text-[10px] md:text-xs font-medium text-m3-onSurface truncate" x-text="cleanName(wp.filename)"></span>
                         </div>
                         <div class="flex gap-1 shrink-0">
