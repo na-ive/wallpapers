@@ -1,0 +1,107 @@
+name: Deploy Wallpaper Gallery
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: pages-deploy
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: main
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Restore Metadata and Thumbnails Cache
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            thumbnails
+            previews
+            wallpapers.json
+          key: ${{ runner.os }}-wallpaper-cache-${{ hashFiles('.github/data/wallpaper-dates.json', '.github/scripts/generate_metadata.py') }}
+          restore-keys: |
+            ${{ runner.os }}-wallpaper-cache-
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update && sudo apt-get install -y imagemagick
+          python -m pip install --upgrade pip
+          pip install Pillow
+
+      - name: Generate Metadata & Thumbnails
+        run: python .github/scripts/generate_metadata.py
+
+      - name: Prepare dist
+        run: |
+          mkdir -p dist
+          cp .github/scripts/template.html dist/index.html
+
+      - name: Install Tailwind CLI & Build CSS
+        run: |
+          curl -sLO https://github.com/tailwindlabs/tailwindcss/releases/latest/download/tailwindcss-linux-x64
+          chmod +x tailwindcss-linux-x64
+          ./tailwindcss-linux-x64 -i .github/scripts/input.css -o dist/style.css --minify
+
+      - name: Assemble dist
+        run: |
+          cp wallpapers.json dist/
+          cp .github/scripts/color_schemes.json dist/
+          cp -r thumbnails dist/
+          cp -r previews dist/
+          touch dist/.nojekyll
+
+      - name: Save Metadata and Thumbnails Cache
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            thumbnails
+            previews
+            wallpapers.json
+          key: ${{ runner.os }}-wallpaper-cache-${{ hashFiles('.github/data/wallpaper-dates.json', '.github/scripts/generate_metadata.py') }}
+
+      - name: Snapshot main branch
+        run: |
+          # Move dist out of the way temporarily
+          mv dist /tmp/dist
+          
+          # Remove generated assets from the repository root
+          rm -rf thumbnails previews wallpapers.json test.css tailwindcss-linux-x64
+          
+          git config user.name "${{ github.actor }}"
+          git config user.email "${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com"
+          
+          git checkout --orphan temp_main
+          git add -A
+          git commit -m "update: $(TZ='Asia/Jakarta' date -Iseconds)"
+          git branch -M main
+          git push origin main --force-with-lease
+          
+          # Restore dist for GH Pages deployment
+          mv /tmp/dist dist
+
+      - name: Deploy to GH Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: dist
+          publish_branch: gh-pages
+          force_orphan: true
+          user_name: ${{ github.actor }}
+          user_email: ${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com
